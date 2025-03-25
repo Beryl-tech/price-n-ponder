@@ -14,31 +14,26 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
   const { id, title, price, images, location, condition, createdAt } = product;
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   
   // Format timeAgo
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
-  // Format price as currency
-  const formattedPrice = new Intl.NumberFormat(language === 'he' ? 'he-IL' : 'en-US', {
-    style: 'currency',
-    currency: 'ILS',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
-
-  // Calculate platform fee
+  // Calculate total price including platform fee
   const platformFee = Math.ceil(price * 0.05);
-  const formattedPlatformFee = new Intl.NumberFormat(language === 'he' ? 'he-IL' : 'en-US', {
+  const totalPrice = price + platformFee;
+  
+  // Format price as currency
+  const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'ILS',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(platformFee);
+  }).format(totalPrice);
 
   // Calculate savings compared to buying new (approximation)
   const estimatedSavings = Math.ceil(price * 0.4); // Assume 40% cheaper than buying new
-  const formattedSavings = new Intl.NumberFormat(language === 'he' ? 'he-IL' : 'en-US', {
+  const formattedSavings = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'ILS',
     minimumFractionDigits: 0,
@@ -117,10 +112,6 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
           <div className="mt-2 bg-green-50 text-green-700 text-xs p-2 rounded-md flex items-center">
             <Leaf className="w-3 h-3 mr-1" />
             Estimated Savings: {formattedSavings}
-          </div>
-          
-          <div className="mt-2 fee-notice text-xs text-muted-foreground">
-            <p>Platform Fee: {formattedPlatformFee}</p>
           </div>
           
           {size === "lg" && (
