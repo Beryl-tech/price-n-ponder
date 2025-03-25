@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 const translations = {
   en: {
     // General
+    language: "Toggle language",
     marketplace: "Marketplace",
     barIlanMarketplace: "Bar Ilan Marketplace",
     browse: "Browse",
@@ -48,6 +49,7 @@ const translations = {
     platformFee: "Platform Fee (5%)",
     total: "Total",
     transactionNote: "Note: All transactions must be completed on Bar Ilan campus",
+    payOnPlatform: "Pay securely through our platform",
     
     // Categories
     books: "Books",
@@ -58,6 +60,7 @@ const translations = {
   },
   he: {
     // General
+    language: "החלף שפה",
     marketplace: "שוק",
     barIlanMarketplace: "שוק בר אילן",
     browse: "עיון",
@@ -101,6 +104,7 @@ const translations = {
     platformFee: "עמלת פלטפורמה (5%)",
     total: "סך הכל",
     transactionNote: "הערה: כל העסקאות חייבות להתבצע בקמפוס בר אילן",
+    payOnPlatform: "שלם בבטחה דרך הפלטפורמה שלנו",
     
     // Categories
     books: "ספרים",
