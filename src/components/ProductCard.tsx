@@ -4,7 +4,7 @@ import { Product } from "../utils/types";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MapPin, School, CreditCard } from "lucide-react";
+import { MapPin, School, CreditCard, Leaf } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
 interface ProductCardProps {
@@ -35,6 +35,15 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(platformFee);
+
+  // Calculate savings compared to buying new (approximation)
+  const estimatedSavings = Math.ceil(price * 0.4); // Assume 40% cheaper than buying new
+  const formattedSavings = new Intl.NumberFormat(language === 'he' ? 'he-IL' : 'en-US', {
+    style: 'currency',
+    currency: 'ILS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(estimatedSavings);
 
   const handlePayment = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -70,6 +79,11 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
             <School className="w-3 h-3 mr-1" />
             {t("campusOnly")}
           </div>
+          {/* Sustainable badge */}
+          <div className="absolute top-3 left-3 bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-medium flex items-center">
+            <Leaf className="w-3 h-3 mr-1" />
+            {t("sustainable")}
+          </div>
         </div>
         
         <div className="p-4">
@@ -97,6 +111,12 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
               <MapPin className="w-3 h-3 mr-1" /> {location}
             </span>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
+          </div>
+          
+          {/* Savings indicator */}
+          <div className="mt-2 bg-green-50 text-green-700 text-xs p-2 rounded-md flex items-center">
+            <Leaf className="w-3 h-3 mr-1" />
+            {t("estimatedSavings")}: {formattedSavings}
           </div>
           
           <div className="mt-2 fee-notice text-xs text-muted-foreground">

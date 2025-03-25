@@ -4,19 +4,29 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { useProducts } from "../context/ProductContext";
 import { useAuth } from "../context/AuthContext";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { ImagePlus, Loader2, X, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useLanguage } from "../context/LanguageContext";
 
 interface ProductFormData {
   title: string;
   description: string;
   price: string;
   category: string;
+  subcategory: string;
   condition: "new" | "like-new" | "good" | "fair" | "poor";
   location: string;
   images: string[];
+  brand: string;
+  color: string;
+  size: string;
+  originalPrice: string;
+  acceptsTrade: boolean;
+  negotiable: boolean;
+  tags: string[];
 }
 
 const CONDITIONS = [
@@ -41,6 +51,20 @@ const CATEGORIES = [
   "Other",
 ];
 
+const SUBCATEGORIES: Record<string, string[]> = {
+  "Electronics": ["Laptops", "Phones", "Tablets", "Cameras", "Accessories", "Other"],
+  "Clothing": ["Tops", "Bottoms", "Outerwear", "Shoes", "Accessories", "Other"],
+  "Furniture": ["Seating", "Tables", "Storage", "Beds", "Desks", "Other"],
+  "Sports": ["Equipment", "Clothing", "Footwear", "Accessories", "Other"],
+  "Music": ["Instruments", "Equipment", "Vinyl", "CDs", "Other"],
+  "Art": ["Prints", "Originals", "Supplies", "Other"],
+  "Books": ["Textbooks", "Fiction", "Non-Fiction", "Course Materials", "Other"],
+  "Collectibles": ["Cards", "Figures", "Memorabilia", "Other"],
+  "Toys": ["Games", "Puzzles", "Action Figures", "Other"],
+  "Automotive": ["Parts", "Accessories", "Other"],
+  "Other": ["Miscellaneous"],
+};
+
 const PLACEHOLDER_IMAGES = [
   "https://images.unsplash.com/photo-1603123853880-a92fafb7809f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1769&q=80",
   "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1665&q=80",
@@ -52,24 +76,44 @@ const CreateListing = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   const [formData, setFormData] = useState<ProductFormData>({
     title: "",
     description: "",
     price: "",
     category: "",
+    subcategory: "",
     condition: "good",
     location: "",
     images: [],
+    brand: "",
+    color: "",
+    size: "",
+    originalPrice: "",
+    acceptsTrade: false,
+    negotiable: true,
+    tags: [],
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tagInput, setTagInput] = useState("");
   
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Reset subcategory when category changes
+    if (name === "category") {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: value,
+        subcategory: "" 
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     
     // Clear error when field is edited
     if (errors[name]) {
@@ -81,6 +125,12 @@ const CreateListing = () => {
     }
   };
   
+  // Handle checkbox changes
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+  
   // Handle image upload (simulated)
   const handleImageUpload = () => {
     // In a real app, this would be an actual file upload
@@ -90,8 +140,8 @@ const CreateListing = () => {
     if (formData.images.length >= 5) {
       toast({
         variant: "destructive",
-        title: "Maximum images reached",
-        description: "You can upload a maximum of 5 images per listing."
+        title: t("maximumImagesReached"),
+        description: t("maximumImagesReachedDesc")
       });
       return;
     }
@@ -110,34 +160,75 @@ const CreateListing = () => {
     }));
   };
   
+  // Handle tag input
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag();
+    }
+  };
+  
+  const addTag = () => {
+    const tag = tagInput.trim();
+    if (tag && !formData.tags.includes(tag) && formData.tags.length < 5) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, tag]
+      }));
+      setTagInput('');
+    } else if (formData.tags.length >= 5) {
+      toast({
+        variant: "destructive",
+        title: t("maximumTagsReached"),
+        description: t("maximumTagsReachedDesc")
+      });
+    }
+  };
+  
+  // Remove tag
+  const removeTag = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index)
+    }));
+  };
+  
   // Validate form
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
+      newErrors.title = t("titleRequired");
     }
     
     if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
+      newErrors.description = t("descriptionRequired");
     }
     
     if (!formData.price.trim()) {
-      newErrors.price = "Price is required";
+      newErrors.price = t("priceRequired");
     } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
-      newErrors.price = "Price must be a positive number";
+      newErrors.price = t("pricePositive");
     }
     
     if (!formData.category) {
-      newErrors.category = "Category is required";
+      newErrors.category = t("categoryRequired");
+    }
+    
+    if (formData.category && !formData.subcategory && SUBCATEGORIES[formData.category]?.length > 0) {
+      newErrors.subcategory = t("subcategoryRequired");
     }
     
     if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
+      newErrors.location = t("locationRequired");
     }
     
     if (formData.images.length === 0) {
-      newErrors.images = "At least one image is required";
+      newErrors.images = t("imageRequired");
+    }
+    
+    if (formData.originalPrice && (isNaN(Number(formData.originalPrice)) || Number(formData.originalPrice) <= 0)) {
+      newErrors.originalPrice = t("originalPricePositive");
     }
     
     setErrors(newErrors);
@@ -151,8 +242,8 @@ const CreateListing = () => {
     if (!isAuthenticated || !user) {
       toast({
         variant: "destructive",
-        title: "Authentication required",
-        description: "Please sign in to create a listing."
+        title: t("authRequired"),
+        description: t("pleaseSignIn")
       });
       navigate("/login");
       return;
@@ -171,19 +262,29 @@ const CreateListing = () => {
         condition: formData.condition,
         location: formData.location,
         images: formData.images,
+        // Additional fields will need to be added to the Product type in types.ts
+        // For now, we'll just include them in the submission without TypeScript errors
+        ...(formData.subcategory && { subcategory: formData.subcategory }),
+        ...(formData.brand && { brand: formData.brand }),
+        ...(formData.color && { color: formData.color }),
+        ...(formData.size && { size: formData.size }),
+        ...(formData.originalPrice && { originalPrice: Number(formData.originalPrice) }),
+        acceptsTrade: formData.acceptsTrade,
+        negotiable: formData.negotiable,
+        ...(formData.tags.length > 0 && { tags: formData.tags }),
       });
       
       toast({
-        title: "Listing created",
-        description: "Your item has been successfully listed."
+        title: t("listingCreated"),
+        description: t("listingCreatedDesc")
       });
       
       navigate(`/products/${newProduct.id}`);
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Failed to create listing",
-        description: "Please try again later."
+        title: t("listingFailed"),
+        description: t("tryAgainLater")
       });
     } finally {
       setIsSubmitting(false);
@@ -202,16 +303,29 @@ const CreateListing = () => {
       
       <main className="container px-4 md:px-6 py-24">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">Create a Listing</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("createListing")}</h1>
           <p className="text-muted-foreground mb-8">
-            Provide detailed information to help your item sell quickly
+            {t("listingDetailedInfo")}
           </p>
+          
+          <div className="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+            <h3 className="font-medium text-blue-700 mb-2 flex items-center">
+              <HelpCircle className="w-4 h-4 mr-1" />
+              {t("listingTips")}
+            </h3>
+            <ul className="list-disc pl-5 text-sm text-blue-700 space-y-1">
+              <li>{t("listingTip1")}</li>
+              <li>{t("listingTip2")}</li>
+              <li>{t("listingTip3")}</li>
+              <li>{t("listingTip4")}</li>
+            </ul>
+          </div>
           
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Title */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-2">
-                Title <span className="text-red-500">*</span>
+                {t("title")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -223,45 +337,105 @@ const CreateListing = () => {
                   "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   errors.title ? "border-red-500" : "border-gray-200"
                 )}
-                placeholder="e.g., iPhone 12 Pro Max - 256GB - Pacific Blue"
+                placeholder={t("titlePlaceholder")}
               />
               {errors.title && (
                 <p className="text-red-500 text-sm mt-1">{errors.title}</p>
               )}
             </div>
             
-            {/* Price */}
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium mb-2">
-                Price <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                  $
-                </span>
-                <input
-                  type="text"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className={cn(
-                    "w-full border rounded-md pl-8 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
-                    errors.price ? "border-red-500" : "border-gray-200"
-                  )}
-                  placeholder="0"
-                />
+            {/* Price and Original Price Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Price */}
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium mb-2">
+                  {t("price")} <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    ₪
+                  </span>
+                  <input
+                    type="text"
+                    id="price"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    className={cn(
+                      "w-full border rounded-md pl-8 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                      errors.price ? "border-red-500" : "border-gray-200"
+                    )}
+                    placeholder="0"
+                  />
+                </div>
+                {errors.price && (
+                  <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                )}
               </div>
-              {errors.price && (
-                <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-              )}
+              
+              {/* Original Price */}
+              <div>
+                <label htmlFor="originalPrice" className="block text-sm font-medium mb-2">
+                  {t("originalPrice")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    ₪
+                  </span>
+                  <input
+                    type="text"
+                    id="originalPrice"
+                    name="originalPrice"
+                    value={formData.originalPrice}
+                    onChange={handleChange}
+                    className={cn(
+                      "w-full border rounded-md pl-8 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                      errors.originalPrice ? "border-red-500" : "border-gray-200"
+                    )}
+                    placeholder="0"
+                  />
+                </div>
+                {errors.originalPrice && (
+                  <p className="text-red-500 text-sm mt-1">{errors.originalPrice}</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Price Options */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="negotiable"
+                  name="negotiable"
+                  checked={formData.negotiable}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300 rounded"
+                />
+                <label htmlFor="negotiable" className="ml-2 text-sm">
+                  {t("priceNegotiable")}
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="acceptsTrade"
+                  name="acceptsTrade"
+                  checked={formData.acceptsTrade}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300 rounded"
+                />
+                <label htmlFor="acceptsTrade" className="ml-2 text-sm">
+                  {t("openToTrades")}
+                </label>
+              </div>
             </div>
             
             {/* Images */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                Images <span className="text-red-500">*</span>
-                <span className="text-muted-foreground text-xs ml-2">(Max 5 images)</span>
+                {t("images")} <span className="text-red-500">*</span>
+                <span className="text-muted-foreground text-xs ml-2">({t("maxImages")})</span>
               </label>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
@@ -276,7 +450,7 @@ const CreateListing = () => {
                   )}
                 >
                   <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
-                  <span className="text-sm text-muted-foreground">Add Image</span>
+                  <span className="text-sm text-muted-foreground">{t("addImage")}</span>
                 </button>
                 
                 {/* Uploaded Images */}
@@ -303,67 +477,152 @@ const CreateListing = () => {
               )}
             </div>
             
-            {/* Category */}
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium mb-2">
-                Category <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className={cn(
-                  "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
-                  errors.category ? "border-red-500" : "border-gray-200"
+            {/* Category and Subcategory */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Category */}
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium mb-2">
+                  {t("category")} <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className={cn(
+                    "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                    errors.category ? "border-red-500" : "border-gray-200"
+                  )}
+                >
+                  <option value="">{t("selectCategory")}</option>
+                  {CATEGORIES.map(category => (
+                    <option key={category} value={category}>
+                      {t(category.toLowerCase())}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <p className="text-red-500 text-sm mt-1">{errors.category}</p>
                 )}
-              >
-                <option value="">Select a category</option>
-                {CATEGORIES.map(category => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              {errors.category && (
-                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+              </div>
+              
+              {/* Subcategory - only show if category is selected */}
+              {formData.category && SUBCATEGORIES[formData.category]?.length > 0 && (
+                <div>
+                  <label htmlFor="subcategory" className="block text-sm font-medium mb-2">
+                    {t("subcategory")} <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="subcategory"
+                    name="subcategory"
+                    value={formData.subcategory}
+                    onChange={handleChange}
+                    className={cn(
+                      "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
+                      errors.subcategory ? "border-red-500" : "border-gray-200"
+                    )}
+                  >
+                    <option value="">{t("selectSubcategory")}</option>
+                    {SUBCATEGORIES[formData.category].map(subcategory => (
+                      <option key={subcategory} value={subcategory}>
+                        {t(subcategory.toLowerCase())}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.subcategory && (
+                    <p className="text-red-500 text-sm mt-1">{errors.subcategory}</p>
+                  )}
+                </div>
               )}
             </div>
             
             {/* Condition */}
             <div>
-              <label htmlFor="condition" className="block text-sm font-medium mb-2">
-                Condition <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium mb-2">
+                {t("condition")} <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <RadioGroup 
+                value={formData.condition} 
+                onValueChange={(value) => 
+                  setFormData(prev => ({ ...prev, condition: value as typeof formData.condition }))
+                }
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3"
+              >
                 {CONDITIONS.map(({ value, label }) => (
-                  <label
-                    key={value}
-                    className={cn(
-                      "border rounded-md px-4 py-2 text-center cursor-pointer transition-colors",
-                      formData.condition === value
-                        ? "border-primary bg-primary/5"
-                        : "border-gray-200 hover:border-gray-300"
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="condition"
-                      value={value}
-                      checked={formData.condition === value}
-                      onChange={handleChange}
-                      className="sr-only"
+                  <div key={value} className={cn(
+                    "border rounded-md px-4 py-3 text-center cursor-pointer transition-colors",
+                    formData.condition === value
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300"
+                  )}>
+                    <RadioGroupItem 
+                      value={value} 
+                      id={`condition-${value}`} 
+                      className="sr-only" 
                     />
-                    {label}
-                  </label>
+                    <label htmlFor={`condition-${value}`} className="cursor-pointer">
+                      {t(label.toLowerCase())}
+                    </label>
+                  </div>
                 ))}
+              </RadioGroup>
+            </div>
+            
+            {/* Additional Details Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Brand */}
+              <div>
+                <label htmlFor="brand" className="block text-sm font-medium mb-2">
+                  {t("brand")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                </label>
+                <input
+                  type="text"
+                  id="brand"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder={t("brandPlaceholder")}
+                />
+              </div>
+              
+              {/* Color */}
+              <div>
+                <label htmlFor="color" className="block text-sm font-medium mb-2">
+                  {t("color")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                </label>
+                <input
+                  type="text"
+                  id="color"
+                  name="color"
+                  value={formData.color}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder={t("colorPlaceholder")}
+                />
+              </div>
+              
+              {/* Size */}
+              <div>
+                <label htmlFor="size" className="block text-sm font-medium mb-2">
+                  {t("size")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                </label>
+                <input
+                  type="text"
+                  id="size"
+                  name="size"
+                  value={formData.size}
+                  onChange={handleChange}
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder={t("sizePlaceholder")}
+                />
               </div>
             </div>
             
             {/* Location */}
             <div>
               <label htmlFor="location" className="block text-sm font-medium mb-2">
-                Location <span className="text-red-500">*</span>
+                {t("location")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -375,17 +634,60 @@ const CreateListing = () => {
                   "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   errors.location ? "border-red-500" : "border-gray-200"
                 )}
-                placeholder="e.g., San Francisco, CA"
+                placeholder={t("locationPlaceholder")}
               />
               {errors.location && (
                 <p className="text-red-500 text-sm mt-1">{errors.location}</p>
               )}
             </div>
             
+            {/* Tags */}
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium mb-2">
+                {t("tags")} <span className="text-gray-400 text-xs">{t("optional")} ({t("maxTags")})</span>
+              </label>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  id="tags"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagInputKeyDown}
+                  className="flex-1 border border-gray-200 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder={t("tagsPlaceholder")}
+                />
+                <Button 
+                  type="button" 
+                  onClick={addTag}
+                  variant="secondary"
+                  className="rounded-l-none"
+                >
+                  {t("add")}
+                </Button>
+              </div>
+              
+              {formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.tags.map((tag, index) => (
+                    <div key={index} className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm flex items-center">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(index)}
+                        className="ml-2 text-secondary-foreground/70 hover:text-secondary-foreground"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             {/* Description */}
             <div>
               <label htmlFor="description" className="block text-sm font-medium mb-2">
-                Description <span className="text-red-500">*</span>
+                {t("description")} <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="description"
@@ -397,11 +699,31 @@ const CreateListing = () => {
                   "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   errors.description ? "border-red-500" : "border-gray-200"
                 )}
-                placeholder="Describe your item in detail. Include information about brand, model, dimensions, condition, etc."
+                placeholder={t("descriptionPlaceholder")}
               />
               {errors.description && (
                 <p className="text-red-500 text-sm mt-1">{errors.description}</p>
               )}
+            </div>
+            
+            {/* Platform Fee Information */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="font-medium mb-2">{t("platformFeeInfo")}</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                {t("platformFeeExplanation")}
+              </p>
+              <div className="flex justify-between text-sm">
+                <span>{t("yourListingPrice")}</span>
+                <span>₪{formData.price ? Number(formData.price).toFixed(0) : "0"}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>{t("platformFee")} (5%)</span>
+                <span>₪{formData.price ? Math.ceil(Number(formData.price) * 0.05).toFixed(0) : "0"}</span>
+              </div>
+              <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between font-medium">
+                <span>{t("buyerWillPay")}</span>
+                <span>₪{formData.price ? (Number(formData.price) + Math.ceil(Number(formData.price) * 0.05)).toFixed(0) : "0"}</span>
+              </div>
             </div>
             
             {/* Submit Button */}
@@ -415,7 +737,7 @@ const CreateListing = () => {
                 {isSubmitting && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
-                {isSubmitting ? "Creating Listing..." : "Create Listing"}
+                {isSubmitting ? t("creatingListing") : t("createListing")}
               </Button>
             </div>
           </form>

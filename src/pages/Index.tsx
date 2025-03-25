@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { ProductGrid } from "../components/ProductGrid";
 import { useProducts } from "../context/ProductContext";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search, Leaf, TrendingDown, RefreshCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "../context/LanguageContext";
 
 const CATEGORIES = [
   { name: "Electronics", icon: "💻" },
@@ -21,6 +21,7 @@ const Index = () => {
   const { products } = useProducts();
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  const { t } = useLanguage();
   
   const featuredProducts = products.slice(0, 6);
   
@@ -55,11 +56,14 @@ const Index = () => {
         
         <div className="container relative z-10 px-4 md:px-6 animate-fade-in">
           <div className="max-w-3xl">
+            <div className="bg-primary/20 text-white backdrop-blur-sm inline-block px-3 py-1 rounded-full text-sm font-medium mb-4">
+              {t("forBarIlanStudents")}
+            </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Buy and sell with confidence in your community
+              Bar-Mart: {t("barMartTagline")}
             </h1>
             <p className="text-xl text-white/90 mb-8">
-              The simple way to find great deals and sell items you no longer need.
+              {t("barMartDescription")}
             </p>
             
             {/* Search Bar */}
@@ -68,7 +72,7 @@ const Index = () => {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="What are you looking for?"
+                  placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full py-3 pl-12 pr-4 bg-transparent text-white placeholder:text-white/70 focus:outline-none"
@@ -76,9 +80,53 @@ const Index = () => {
               </div>
               <Link to={`/products?search=${searchQuery}`}>
                 <Button size="lg" className="rounded-full px-6">
-                  Search
+                  {t("search")}
                 </Button>
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Value Proposition Section */}
+      <section className="py-16 bg-primary/5">
+        <div className="container px-4 md:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">{t("whyBarMart")}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              {t("barMartValueProp")}
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-6 rounded-xl shadow-sm text-center">
+              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingDown className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">{t("saveMoneyTitle")}</h3>
+              <p className="text-muted-foreground">
+                {t("saveMoneyDesc")}
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-xl shadow-sm text-center">
+              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Leaf className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">{t("sustainableTitle")}</h3>
+              <p className="text-muted-foreground">
+                {t("sustainableDesc")}
+              </p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-xl shadow-sm text-center">
+              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">{t("communityTitle")}</h3>
+              <p className="text-muted-foreground">
+                {t("communityDesc")}
+              </p>
             </div>
           </div>
         </div>
@@ -88,9 +136,9 @@ const Index = () => {
       <section className="py-20 bg-white">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Browse Categories</h2>
+            <h2 className="text-3xl font-bold mb-4">{t("browseCategories")}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore thousands of items in our most popular categories
+              {t("exploreCategoriesDesc")}
             </p>
           </div>
           
@@ -111,7 +159,7 @@ const Index = () => {
                 )}
               >
                 <span className="text-4xl mb-3">{category.icon}</span>
-                <span className="font-medium">{category.name}</span>
+                <span className="font-medium">{t(category.name.toLowerCase())}</span>
               </Link>
             ))}
           </div>
@@ -123,14 +171,14 @@ const Index = () => {
         <div className="container px-4 md:px-6">
           <div className="flex justify-between items-center mb-12">
             <div>
-              <h2 className="text-3xl font-bold mb-1">Featured Items</h2>
+              <h2 className="text-3xl font-bold mb-1">{t("featuredItems")}</h2>
               <p className="text-muted-foreground">
-                Discover our latest and popular listings
+                {t("discoverLatestListings")}
               </p>
             </div>
             <Link to="/products">
               <Button variant="outline" className="group">
-                View All
+                {t("viewAll")}
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
@@ -144,9 +192,9 @@ const Index = () => {
       <section className="py-20 bg-white">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+            <h2 className="text-3xl font-bold mb-4">{t("howItWorks")}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Simple steps to buy and sell with ease
+              {t("simpleSteps")}
             </p>
           </div>
           
@@ -155,9 +203,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                 <span className="text-2xl font-bold">1</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Create a Listing</h3>
+              <h3 className="text-xl font-semibold mb-3">{t("createListing")}</h3>
               <p className="text-muted-foreground">
-                Take photos, set a price, add a description, and publish your item in minutes.
+                {t("createListingDesc")}
               </p>
             </div>
             
@@ -165,9 +213,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                 <span className="text-2xl font-bold">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Connect with Buyers</h3>
+              <h3 className="text-xl font-semibold mb-3">{t("connectBuyers")}</h3>
               <p className="text-muted-foreground">
-                Respond to messages, answer questions, and negotiate prices securely.
+                {t("connectBuyersDesc")}
               </p>
             </div>
             
@@ -175,9 +223,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                 <span className="text-2xl font-bold">3</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Complete the Sale</h3>
+              <h3 className="text-xl font-semibold mb-3">{t("completeSale")}</h3>
               <p className="text-muted-foreground">
-                Meet safely or arrange shipping and payment methods that work for both parties.
+                {t("completeSaleDesc")}
               </p>
             </div>
           </div>
@@ -185,7 +233,7 @@ const Index = () => {
           <div className="text-center mt-12">
             <Link to="/create-listing">
               <Button size="lg" className="px-8">
-                Start Selling
+                {t("startSelling")}
               </Button>
             </Link>
           </div>
@@ -197,9 +245,9 @@ const Index = () => {
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h2 className="text-xl font-bold mb-4">MarketPlace</h2>
+              <h2 className="text-xl font-bold mb-4">Bar-Mart</h2>
               <p className="text-gray-400">
-                The trusted platform for buying and selling locally.
+                {t("footerTagline")}
               </p>
             </div>
             
@@ -268,7 +316,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} MarketPlace. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Bar-Mart. {t("allRightsReserved")}</p>
           </div>
         </div>
       </footer>
