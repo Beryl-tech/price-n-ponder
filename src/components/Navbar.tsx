@@ -1,7 +1,6 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Menu, X, Search, MessageSquare, User, ShoppingBag, PlusCircle } from "lucide-react";
+import { Menu, X, Search, MessageSquare, User, ShoppingBag, PlusCircle, ShoppingCart } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "../context/LanguageContext";
