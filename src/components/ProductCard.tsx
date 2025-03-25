@@ -4,6 +4,8 @@ import { Product } from "../utils/types";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { MapPin, School } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 interface ProductCardProps {
   product: Product;
@@ -12,17 +14,27 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
   const { id, title, price, images, location, condition, createdAt } = product;
+  const { t, language } = useLanguage();
   
   // Format timeAgo
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
   // Format price as currency
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const formattedPrice = new Intl.NumberFormat(language === 'he' ? 'he-IL' : 'en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'ILS',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);
+
+  // Calculate platform fee
+  const platformFee = Math.ceil(price * 0.05);
+  const formattedPlatformFee = new Intl.NumberFormat(language === 'he' ? 'he-IL' : 'en-US', {
+    style: 'currency',
+    currency: 'ILS',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(platformFee);
 
   return (
     <div 
@@ -47,6 +59,10 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-md text-xs font-medium">
             {condition}
           </div>
+          <div className="absolute bottom-3 left-3 campus-badge">
+            <School className="w-3 h-3 mr-1" />
+            {t("campusOnly")}
+          </div>
         </div>
         
         <div className="p-4">
@@ -70,8 +86,14 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
           </div>
           
           <div className="flex justify-between items-center mt-2">
-            <span className="text-xs text-muted-foreground">{location}</span>
+            <span className="text-xs text-muted-foreground flex items-center">
+              <MapPin className="w-3 h-3 mr-1" /> {location}
+            </span>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
+          </div>
+          
+          <div className="mt-2 fee-notice">
+            <p>{t("platformFee")}: {formattedPlatformFee}</p>
           </div>
           
           {size === "lg" && (
@@ -79,7 +101,7 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
               className="w-full mt-4" 
               variant="outline"
             >
-              View Details
+              {t("viewDetails")}
             </Button>
           )}
         </div>

@@ -1,5 +1,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -52,6 +53,11 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  /* Set Hebrew font for RTL */
+  html.rtl body {
+    font-family: 'Heebo', sans-serif;
+  }
   
   #root {
     @apply h-full w-full max-w-none p-0 m-0;
@@ -87,6 +93,48 @@
   .page-transition-exit-active {
     @apply opacity-0 transition-opacity duration-300;
   }
+
+  /* RTL specific adjustments */
+  html.rtl .ml-1, html.rtl .ml-2, html.rtl .ml-3, html.rtl .ml-4 {
+    margin-left: 0;
+    margin-right: 0.25rem;
+    margin-right: 0.5rem;
+    margin-right: 0.75rem;
+    margin-right: 1rem;
+  }
+
+  html.rtl .mr-1, html.rtl .mr-2, html.rtl .mr-3, html.rtl .mr-4 {
+    margin-right: 0;
+    margin-left: 0.25rem;
+    margin-left: 0.5rem;
+    margin-left: 0.75rem;
+    margin-left: 1rem;
+  }
+
+  html.rtl .pl-1, html.rtl .pl-2, html.rtl .pl-3, html.rtl .pl-4, html.rtl .pl-8 {
+    padding-left: 0;
+    padding-right: 0.25rem;
+    padding-right: 0.5rem;
+    padding-right: 0.75rem;
+    padding-right: 1rem;
+    padding-right: 2rem;
+  }
+
+  html.rtl .pr-1, html.rtl .pr-2, html.rtl .pr-3, html.rtl .pr-4 {
+    padding-right: 0;
+    padding-left: 0.25rem;
+    padding-left: 0.5rem;
+    padding-left: 0.75rem;
+    padding-left: 1rem;
+  }
+
+  html.rtl .text-left {
+    text-align: right;
+  }
+
+  html.rtl .text-right {
+    text-align: left;
+  }
 }
 
 @layer components {
@@ -96,5 +144,15 @@
   
   .hover-scale {
     @apply transition-transform duration-300 hover:scale-[1.02];
+  }
+
+  /* Campus verification badge */
+  .campus-badge {
+    @apply bg-green-100 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full inline-flex items-center;
+  }
+
+  /* Platform fee notification */
+  .fee-notice {
+    @apply text-xs text-gray-500 bg-gray-100 p-2 rounded-md;
   }
 }
