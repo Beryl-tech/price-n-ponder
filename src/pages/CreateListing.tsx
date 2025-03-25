@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useLanguage } from "../context/LanguageContext";
 
 interface ProductFormData {
   title: string;
@@ -76,7 +75,6 @@ const CreateListing = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
   
   const [formData, setFormData] = useState<ProductFormData>({
     title: "",
@@ -140,8 +138,8 @@ const CreateListing = () => {
     if (formData.images.length >= 5) {
       toast({
         variant: "destructive",
-        title: t("maximumImagesReached"),
-        description: t("maximumImagesReachedDesc")
+        title: "Maximum Images Reached",
+        description: "You can only upload up to 5 images per listing."
       });
       return;
     }
@@ -179,8 +177,8 @@ const CreateListing = () => {
     } else if (formData.tags.length >= 5) {
       toast({
         variant: "destructive",
-        title: t("maximumTagsReached"),
-        description: t("maximumTagsReachedDesc")
+        title: "Maximum Tags Reached",
+        description: "You can only add up to 5 tags per listing."
       });
     }
   };
@@ -198,37 +196,37 @@ const CreateListing = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.title.trim()) {
-      newErrors.title = t("titleRequired");
+      newErrors.title = "Title is required";
     }
     
     if (!formData.description.trim()) {
-      newErrors.description = t("descriptionRequired");
+      newErrors.description = "Description is required";
     }
     
     if (!formData.price.trim()) {
-      newErrors.price = t("priceRequired");
+      newErrors.price = "Price is required";
     } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
-      newErrors.price = t("pricePositive");
+      newErrors.price = "Price must be a positive number";
     }
     
     if (!formData.category) {
-      newErrors.category = t("categoryRequired");
+      newErrors.category = "Category is required";
     }
     
     if (formData.category && !formData.subcategory && SUBCATEGORIES[formData.category]?.length > 0) {
-      newErrors.subcategory = t("subcategoryRequired");
+      newErrors.subcategory = "Subcategory is required";
     }
     
     if (!formData.location.trim()) {
-      newErrors.location = t("locationRequired");
+      newErrors.location = "Location is required";
     }
     
     if (formData.images.length === 0) {
-      newErrors.images = t("imageRequired");
+      newErrors.images = "At least one image is required";
     }
     
     if (formData.originalPrice && (isNaN(Number(formData.originalPrice)) || Number(formData.originalPrice) <= 0)) {
-      newErrors.originalPrice = t("originalPricePositive");
+      newErrors.originalPrice = "Original price must be a positive number";
     }
     
     setErrors(newErrors);
@@ -242,8 +240,8 @@ const CreateListing = () => {
     if (!isAuthenticated || !user) {
       toast({
         variant: "destructive",
-        title: t("authRequired"),
-        description: t("pleaseSignIn")
+        title: "Authentication Required",
+        description: "Please sign in to create a listing"
       });
       navigate("/login");
       return;
@@ -254,6 +252,8 @@ const CreateListing = () => {
     try {
       setIsSubmitting(true);
       
+      // Note: We're intentionally not submitting all fields to match the Product type
+      // In a production app, we would update the Product type to include these fields
       const newProduct = await createProduct({
         title: formData.title,
         description: formData.description,
@@ -262,29 +262,27 @@ const CreateListing = () => {
         condition: formData.condition,
         location: formData.location,
         images: formData.images,
-        // Additional fields will need to be added to the Product type in types.ts
-        // For now, we'll just include them in the submission without TypeScript errors
-        ...(formData.subcategory && { subcategory: formData.subcategory }),
-        ...(formData.brand && { brand: formData.brand }),
-        ...(formData.color && { color: formData.color }),
-        ...(formData.size && { size: formData.size }),
-        ...(formData.originalPrice && { originalPrice: Number(formData.originalPrice) }),
-        acceptsTrade: formData.acceptsTrade,
+        // The following are additional fields not in the Product type
+        subcategory: formData.subcategory || undefined,
+        brand: formData.brand || undefined,
+        color: formData.color || undefined,
+        size: formData.size || undefined,
+        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
         negotiable: formData.negotiable,
-        ...(formData.tags.length > 0 && { tags: formData.tags }),
+        tags: formData.tags.length > 0 ? formData.tags : undefined,
       });
       
       toast({
-        title: t("listingCreated"),
-        description: t("listingCreatedDesc")
+        title: "Listing Created",
+        description: "Your listing has been successfully created!"
       });
       
       navigate(`/products/${newProduct.id}`);
     } catch (error) {
       toast({
         variant: "destructive",
-        title: t("listingFailed"),
-        description: t("tryAgainLater")
+        title: "Failed to Create Listing",
+        description: "Please try again later."
       });
     } finally {
       setIsSubmitting(false);
@@ -303,21 +301,21 @@ const CreateListing = () => {
       
       <main className="container px-4 md:px-6 py-24">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">{t("createListing")}</h1>
+          <h1 className="text-3xl font-bold mb-2">Create Listing</h1>
           <p className="text-muted-foreground mb-8">
-            {t("listingDetailedInfo")}
+            Provide detailed information about your item to help it sell faster.
           </p>
           
           <div className="mb-8 p-4 bg-blue-50 border border-blue-100 rounded-lg">
             <h3 className="font-medium text-blue-700 mb-2 flex items-center">
               <HelpCircle className="w-4 h-4 mr-1" />
-              {t("listingTips")}
+              Listing Tips
             </h3>
             <ul className="list-disc pl-5 text-sm text-blue-700 space-y-1">
-              <li>{t("listingTip1")}</li>
-              <li>{t("listingTip2")}</li>
-              <li>{t("listingTip3")}</li>
-              <li>{t("listingTip4")}</li>
+              <li>Include high-quality photos to showcase your item</li>
+              <li>Be honest about the condition to avoid returns or disputes</li>
+              <li>Set a competitive price by comparing similar listings</li>
+              <li>Offer thorough details and respond to buyer questions quickly</li>
             </ul>
           </div>
           
@@ -325,7 +323,7 @@ const CreateListing = () => {
             {/* Title */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-2">
-                {t("title")} <span className="text-red-500">*</span>
+                Title <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -337,7 +335,7 @@ const CreateListing = () => {
                   "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   errors.title ? "border-red-500" : "border-gray-200"
                 )}
-                placeholder={t("titlePlaceholder")}
+                placeholder="Enter a descriptive title"
               />
               {errors.title && (
                 <p className="text-red-500 text-sm mt-1">{errors.title}</p>
@@ -349,7 +347,7 @@ const CreateListing = () => {
               {/* Price */}
               <div>
                 <label htmlFor="price" className="block text-sm font-medium mb-2">
-                  {t("price")} <span className="text-red-500">*</span>
+                  Price <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -376,7 +374,7 @@ const CreateListing = () => {
               {/* Original Price */}
               <div>
                 <label htmlFor="originalPrice" className="block text-sm font-medium mb-2">
-                  {t("originalPrice")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                  Original Price <span className="text-gray-400 text-xs">(Optional)</span>
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -413,7 +411,7 @@ const CreateListing = () => {
                   className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300 rounded"
                 />
                 <label htmlFor="negotiable" className="ml-2 text-sm">
-                  {t("priceNegotiable")}
+                  Price is negotiable
                 </label>
               </div>
               <div className="flex items-center">
@@ -426,7 +424,7 @@ const CreateListing = () => {
                   className="h-4 w-4 text-primary focus:ring-primary/50 border-gray-300 rounded"
                 />
                 <label htmlFor="acceptsTrade" className="ml-2 text-sm">
-                  {t("openToTrades")}
+                  Open to trades
                 </label>
               </div>
             </div>
@@ -434,8 +432,8 @@ const CreateListing = () => {
             {/* Images */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("images")} <span className="text-red-500">*</span>
-                <span className="text-muted-foreground text-xs ml-2">({t("maxImages")})</span>
+                Images <span className="text-red-500">*</span>
+                <span className="text-muted-foreground text-xs ml-2">(Maximum 5 images)</span>
               </label>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
@@ -450,7 +448,7 @@ const CreateListing = () => {
                   )}
                 >
                   <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
-                  <span className="text-sm text-muted-foreground">{t("addImage")}</span>
+                  <span className="text-sm text-muted-foreground">Add Image</span>
                 </button>
                 
                 {/* Uploaded Images */}
@@ -482,7 +480,7 @@ const CreateListing = () => {
               {/* Category */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium mb-2">
-                  {t("category")} <span className="text-red-500">*</span>
+                  Category <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="category"
@@ -494,10 +492,10 @@ const CreateListing = () => {
                     errors.category ? "border-red-500" : "border-gray-200"
                   )}
                 >
-                  <option value="">{t("selectCategory")}</option>
+                  <option value="">Select a category</option>
                   {CATEGORIES.map(category => (
                     <option key={category} value={category}>
-                      {t(category.toLowerCase())}
+                      {category}
                     </option>
                   ))}
                 </select>
@@ -510,7 +508,7 @@ const CreateListing = () => {
               {formData.category && SUBCATEGORIES[formData.category]?.length > 0 && (
                 <div>
                   <label htmlFor="subcategory" className="block text-sm font-medium mb-2">
-                    {t("subcategory")} <span className="text-red-500">*</span>
+                    Subcategory <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="subcategory"
@@ -522,10 +520,10 @@ const CreateListing = () => {
                       errors.subcategory ? "border-red-500" : "border-gray-200"
                     )}
                   >
-                    <option value="">{t("selectSubcategory")}</option>
+                    <option value="">Select a subcategory</option>
                     {SUBCATEGORIES[formData.category].map(subcategory => (
                       <option key={subcategory} value={subcategory}>
-                        {t(subcategory.toLowerCase())}
+                        {subcategory}
                       </option>
                     ))}
                   </select>
@@ -539,7 +537,7 @@ const CreateListing = () => {
             {/* Condition */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                {t("condition")} <span className="text-red-500">*</span>
+                Condition <span className="text-red-500">*</span>
               </label>
               <RadioGroup 
                 value={formData.condition} 
@@ -561,7 +559,7 @@ const CreateListing = () => {
                       className="sr-only" 
                     />
                     <label htmlFor={`condition-${value}`} className="cursor-pointer">
-                      {t(label.toLowerCase())}
+                      {label}
                     </label>
                   </div>
                 ))}
@@ -573,7 +571,7 @@ const CreateListing = () => {
               {/* Brand */}
               <div>
                 <label htmlFor="brand" className="block text-sm font-medium mb-2">
-                  {t("brand")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                  Brand <span className="text-gray-400 text-xs">(Optional)</span>
                 </label>
                 <input
                   type="text"
@@ -582,14 +580,14 @@ const CreateListing = () => {
                   value={formData.brand}
                   onChange={handleChange}
                   className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder={t("brandPlaceholder")}
+                  placeholder="e.g. Apple, Nike, IKEA"
                 />
               </div>
               
               {/* Color */}
               <div>
                 <label htmlFor="color" className="block text-sm font-medium mb-2">
-                  {t("color")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                  Color <span className="text-gray-400 text-xs">(Optional)</span>
                 </label>
                 <input
                   type="text"
@@ -598,14 +596,14 @@ const CreateListing = () => {
                   value={formData.color}
                   onChange={handleChange}
                   className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder={t("colorPlaceholder")}
+                  placeholder="e.g. Black, Red, Blue"
                 />
               </div>
               
               {/* Size */}
               <div>
                 <label htmlFor="size" className="block text-sm font-medium mb-2">
-                  {t("size")} <span className="text-gray-400 text-xs">{t("optional")}</span>
+                  Size <span className="text-gray-400 text-xs">(Optional)</span>
                 </label>
                 <input
                   type="text"
@@ -614,7 +612,7 @@ const CreateListing = () => {
                   value={formData.size}
                   onChange={handleChange}
                   className="w-full border border-gray-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder={t("sizePlaceholder")}
+                  placeholder="e.g. S, M, L, XL, 42"
                 />
               </div>
             </div>
@@ -622,7 +620,7 @@ const CreateListing = () => {
             {/* Location */}
             <div>
               <label htmlFor="location" className="block text-sm font-medium mb-2">
-                {t("location")} <span className="text-red-500">*</span>
+                Location <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -634,7 +632,7 @@ const CreateListing = () => {
                   "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   errors.location ? "border-red-500" : "border-gray-200"
                 )}
-                placeholder={t("locationPlaceholder")}
+                placeholder="Campus building, specific area"
               />
               {errors.location && (
                 <p className="text-red-500 text-sm mt-1">{errors.location}</p>
@@ -644,7 +642,7 @@ const CreateListing = () => {
             {/* Tags */}
             <div>
               <label htmlFor="tags" className="block text-sm font-medium mb-2">
-                {t("tags")} <span className="text-gray-400 text-xs">{t("optional")} ({t("maxTags")})</span>
+                Tags <span className="text-gray-400 text-xs">(Optional - Maximum 5 tags)</span>
               </label>
               <div className="flex items-center">
                 <input
@@ -654,7 +652,7 @@ const CreateListing = () => {
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleTagInputKeyDown}
                   className="flex-1 border border-gray-200 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder={t("tagsPlaceholder")}
+                  placeholder="Add keywords to help buyers find your item"
                 />
                 <Button 
                   type="button" 
@@ -662,7 +660,7 @@ const CreateListing = () => {
                   variant="secondary"
                   className="rounded-l-none"
                 >
-                  {t("add")}
+                  Add
                 </Button>
               </div>
               
@@ -687,7 +685,7 @@ const CreateListing = () => {
             {/* Description */}
             <div>
               <label htmlFor="description" className="block text-sm font-medium mb-2">
-                {t("description")} <span className="text-red-500">*</span>
+                Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="description"
@@ -699,7 +697,7 @@ const CreateListing = () => {
                   "w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50",
                   errors.description ? "border-red-500" : "border-gray-200"
                 )}
-                placeholder={t("descriptionPlaceholder")}
+                placeholder="Describe your item in detail - include information about features, condition, history, and any defects"
               />
               {errors.description && (
                 <p className="text-red-500 text-sm mt-1">{errors.description}</p>
@@ -708,20 +706,20 @@ const CreateListing = () => {
             
             {/* Platform Fee Information */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="font-medium mb-2">{t("platformFeeInfo")}</h3>
+              <h3 className="font-medium mb-2">Platform Fee Information</h3>
               <p className="text-sm text-muted-foreground mb-2">
-                {t("platformFeeExplanation")}
+                Bar-Mart charges a 5% fee on all transactions to maintain the platform and protect both buyers and sellers.
               </p>
               <div className="flex justify-between text-sm">
-                <span>{t("yourListingPrice")}</span>
+                <span>Your listing price</span>
                 <span>₪{formData.price ? Number(formData.price).toFixed(0) : "0"}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>{t("platformFee")} (5%)</span>
+                <span>Platform fee (5%)</span>
                 <span>₪{formData.price ? Math.ceil(Number(formData.price) * 0.05).toFixed(0) : "0"}</span>
               </div>
               <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between font-medium">
-                <span>{t("buyerWillPay")}</span>
+                <span>Buyer will pay</span>
                 <span>₪{formData.price ? (Number(formData.price) + Math.ceil(Number(formData.price) * 0.05)).toFixed(0) : "0"}</span>
               </div>
             </div>
@@ -737,7 +735,7 @@ const CreateListing = () => {
                 {isSubmitting && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
-                {isSubmitting ? t("creatingListing") : t("createListing")}
+                {isSubmitting ? "Creating Listing..." : "Create Listing"}
               </Button>
             </div>
           </form>

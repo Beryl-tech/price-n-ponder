@@ -5,7 +5,6 @@ import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MapPin, School, CreditCard, Leaf } from "lucide-react";
-import { useLanguage } from "../context/LanguageContext";
 
 interface ProductCardProps {
   product: Product;
@@ -14,12 +13,11 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
   const { id, title, price, images, location, condition, createdAt } = product;
-  const { t } = useLanguage();
   
   // Format timeAgo
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
-  // Calculate total price including platform fee
+  // Calculate total price including platform fee (now hidden from buyers)
   const platformFee = Math.ceil(price * 0.05);
   const totalPrice = price + platformFee;
   
