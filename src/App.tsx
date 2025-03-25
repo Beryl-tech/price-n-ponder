@@ -15,6 +15,7 @@ import CreateListing from "./pages/CreateListing";
 import Messages from "./pages/Messages";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Cart from "./pages/Cart";
 import NotFound from "./pages/NotFound";
 
 // Create a client for React Query
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/cart" element={<Cart />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

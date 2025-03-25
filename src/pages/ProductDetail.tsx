@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -10,7 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ProductGrid } from "../components/ProductGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -136,6 +135,9 @@ const ProductDetail = () => {
     
     // Save updated cart
     localStorage.setItem('cart', JSON.stringify(existingCart));
+    
+    // Dispatch custom event to update cart indicator
+    window.dispatchEvent(new Event('cartUpdated'));
     
     toast({
       title: "Added to cart",
