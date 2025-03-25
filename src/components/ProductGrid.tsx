@@ -9,13 +9,15 @@ interface ProductGridProps {
   columns?: 2 | 3 | 4;
   size?: "sm" | "md" | "lg";
   showFilters?: boolean;
+  isLoading?: boolean;
 }
 
 export const ProductGrid = ({ 
   products, 
   columns = 3, 
   size = "md",
-  showFilters = false
+  showFilters = false,
+  isLoading = false
 }: ProductGridProps) => {
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -73,16 +75,23 @@ export const ProductGrid = ({
           "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         )}
       >
-        {filteredProducts.map(product => (
-          <ProductCard 
-            key={product.id}
-            product={product}
-            size={size}
-          />
-        ))}
+        {isLoading ? (
+          // Display skeleton placeholders when loading
+          Array(6).fill(0).map((_, index) => (
+            <div key={index} className="rounded-lg bg-gray-100 animate-pulse h-64"></div>
+          ))
+        ) : (
+          filteredProducts.map(product => (
+            <ProductCard 
+              key={product.id}
+              product={product}
+              size={size}
+            />
+          ))
+        )}
       </div>
       
-      {filteredProducts.length === 0 && (
+      {!isLoading && filteredProducts.length === 0 && (
         <div className="text-center py-12">
           <p className="text-lg text-muted-foreground">No products found matching your filter.</p>
         </div>
