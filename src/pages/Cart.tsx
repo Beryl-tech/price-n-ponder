@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -60,10 +59,8 @@ const Cart = () => {
     }
   }, [cartItems, isLoading]);
 
-  // Calculate cart totals
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const platformFee = Math.ceil(subtotal * 0.05); // 5% platform fee
-  const total = subtotal + platformFee;
+  // Calculate cart total (platform fee is now hidden and included in the price)
+  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -337,15 +334,6 @@ const Cart = () => {
                 <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                 
                 <div className="space-y-3 mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>{formatCurrency(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Platform fee (5%)</span>
-                    <span>{formatCurrency(platformFee)}</span>
-                  </div>
-                  <div className="h-px bg-gray-200 my-2"></div>
                   <div className="flex justify-between font-semibold">
                     <span>Total</span>
                     <span>{formatCurrency(total)}</span>
@@ -382,14 +370,6 @@ const Cart = () => {
           
           <div className="space-y-4 py-4">
             <div className="border-b pb-4">
-              <div className="flex justify-between py-1">
-                <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span>Platform fee</span>
-                <span>{formatCurrency(platformFee)}</span>
-              </div>
               <div className="flex justify-between py-1 font-medium">
                 <span>Total</span>
                 <span>{formatCurrency(total)}</span>

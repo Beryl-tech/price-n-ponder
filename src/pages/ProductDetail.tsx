@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -58,6 +57,7 @@ const ProductDetail = () => {
   
   const { title, description, price, images, condition, category, location, seller, createdAt } = product;
   
+  // Format price with platform fee already included
   const formattedPrice = new Intl.NumberFormat('he-IL', {
     style: 'currency',
     currency: 'ILS',
@@ -465,7 +465,7 @@ const ProductDetail = () => {
         )}
       </main>
 
-      {/* Payment Dialog */}
+      {/* Dialog for payment */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -495,29 +495,13 @@ const ProductDetail = () => {
             </div>
             
             <div className="border-b pb-4">
-              <div className="flex justify-between py-1">
-                <span>Subtotal</span>
-                <span>{new Intl.NumberFormat('he-IL', {
-                  style: 'currency',
-                  currency: 'ILS',
-                  minimumFractionDigits: 0,
-                }).format(price * quantity)}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span>Platform fee</span>
-                <span>{new Intl.NumberFormat('he-IL', {
-                  style: 'currency',
-                  currency: 'ILS',
-                  minimumFractionDigits: 0,
-                }).format(price * quantity * 0.05)}</span>
-              </div>
               <div className="flex justify-between py-1 font-medium">
                 <span>Total</span>
                 <span>{new Intl.NumberFormat('he-IL', {
                   style: 'currency',
                   currency: 'ILS',
                   minimumFractionDigits: 0,
-                }).format(price * quantity * 1.05)}</span>
+                }).format(price * quantity)}</span>
               </div>
             </div>
             
