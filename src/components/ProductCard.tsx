@@ -4,7 +4,7 @@ import { Product } from "../utils/types";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MapPin, School } from "lucide-react";
+import { MapPin, School, CreditCard } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
 interface ProductCardProps {
@@ -35,6 +35,13 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(platformFee);
+
+  const handlePayment = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // In a real implementation, this would redirect to a payment gateway
+    alert(t("paymentProcessingMessage"));
+  };
 
   return (
     <div 
@@ -92,7 +99,7 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
           
-          <div className="mt-2 fee-notice">
+          <div className="mt-2 fee-notice text-xs text-muted-foreground">
             <p>{t("platformFee")}: {formattedPlatformFee}</p>
           </div>
           
@@ -104,6 +111,15 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
               {t("viewDetails")}
             </Button>
           )}
+          
+          <Button
+            onClick={handlePayment}
+            className="w-full mt-3"
+            variant="default"
+          >
+            <CreditCard className="w-4 h-4 mr-2" />
+            {t("payOnPlatform")}
+          </Button>
         </div>
       </Link>
     </div>

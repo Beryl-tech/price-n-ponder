@@ -45,11 +45,22 @@ const translations = {
     send: "Send",
     typeMessage: "Type your message...",
     
-    // Platform fees
+    // Platform fees and payments
     platformFee: "Platform Fee (5%)",
     total: "Total",
     transactionNote: "Note: All transactions must be completed on Bar Ilan campus",
     payOnPlatform: "Pay securely through our platform",
+    paymentProcessingMessage: "Payment processing... In a real implementation, this would redirect to a payment gateway.",
+    processingPayment: "Processing payment...",
+    paymentSuccess: "Payment successful!",
+    paymentFailed: "Payment failed. Please try again.",
+    proceedToPayment: "Proceed to Payment",
+    securePayment: "Secure Payment",
+    paymentDetails: "Payment Details",
+    cardInformation: "Card Information",
+    expiryDate: "Expiry Date",
+    cvv: "CVV",
+    nameOnCard: "Name on Card",
     
     // Categories
     books: "Books",
@@ -100,11 +111,22 @@ const translations = {
     send: "שלח",
     typeMessage: "הקלד את ההודעה שלך...",
     
-    // Platform fees
+    // Platform fees and payments
     platformFee: "עמלת פלטפורמה (5%)",
     total: "סך הכל",
     transactionNote: "הערה: כל העסקאות חייבות להתבצע בקמפוס בר אילן",
     payOnPlatform: "שלם בבטחה דרך הפלטפורמה שלנו",
+    paymentProcessingMessage: "מעבד תשלום... בהטמעה אמיתית, זה היה מעביר לשער תשלומים.",
+    processingPayment: "מעבד תשלום...",
+    paymentSuccess: "התשלום בוצע בהצלחה!",
+    paymentFailed: "התשלום נכשל. נסה שוב.",
+    proceedToPayment: "המשך לתשלום",
+    securePayment: "תשלום מאובטח",
+    paymentDetails: "פרטי תשלום",
+    cardInformation: "פרטי כרטיס",
+    expiryDate: "תאריך תפוגה",
+    cvv: "קוד אבטחה",
+    nameOnCard: "שם על הכרטיס",
     
     // Categories
     books: "ספרים",
