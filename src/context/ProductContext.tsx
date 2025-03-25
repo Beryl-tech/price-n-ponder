@@ -8,7 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 interface ProductContextType {
   products: Product[];
   getProduct: (id: string) => Product | undefined;
-  createProduct: (product: Omit<Product, "id" | "createdAt" | "updatedAt" | "seller">) => Promise<Product>;
+  createProduct: (product: Omit<Product, "id" | "createdAt" | "updatedAt" | "seller" | "sold" | "soldAt">) => Promise<Product>;
+  updateProduct: (id: string, product: Partial<Omit<Product, "id" | "createdAt" | "updatedAt" | "seller" | "sold" | "soldAt">>) => Promise<Product>;
+  deleteProduct: (id: string) => Promise<void>;
+  confirmPurchase: (productId: string, buyerId: string) => Promise<void>;
   messages: Message[];
   messageThreads: MessageThread[];
   getMessages: (threadId: string) => Message[];
@@ -52,7 +55,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const createProduct = async (productData: Omit<Product, "id" | "createdAt" | "updatedAt" | "seller">) => {
+  const createProduct = async (productData: Omit<Product, "id" | "createdAt" | "updatedAt" | "seller" | "sold" | "soldAt">) => {
     if (!user) throw new Error("You must be logged in to create a product");
 
     // Format the description with AI
@@ -67,14 +70,117 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
     const now = new Date().toISOString();
     const newProduct: Product = {
       ...enhancedProductData,
-      id: String(products.length + 1),
+      id: String(Date.now()),
       seller: user,
       createdAt: now,
       updatedAt: now,
+      sold: false,
     };
 
     setProducts(prevProducts => [...prevProducts, newProduct]);
+    
+    // Send email notification (simulated)
+    console.log(`Sending email to ${user.email} about new listing creation`);
+    
     return newProduct;
+  };
+  
+  // New function to update a product
+  const updateProduct = async (
+    id: string, 
+    productData: Partial<Omit<Product, "id" | "createdAt" | "updatedAt" | "seller" | "sold" | "soldAt">>
+  ) => {
+    if (!user) throw new Error("You must be logged in to update a product");
+    
+    const existingProduct = getProduct(id);
+    if (!existingProduct) throw new Error("Product not found");
+    
+    // Check if the current user is the owner
+    if (existingProduct.seller.id !== user.id) {
+      throw new Error("You don't have permission to update this product");
+    }
+    
+    // Format the description with AI if it's being updated
+    let enhancedProductData = { ...productData };
+    if (productData.description) {
+      enhancedProductData.description = await formatProductDescription(productData.description);
+    }
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const now = new Date().toISOString();
+    const updatedProduct: Product = {
+      ...existingProduct,
+      ...enhancedProductData,
+      updatedAt: now,
+    };
+    
+    setProducts(prevProducts => 
+      prevProducts.map(product => 
+        product.id === id ? updatedProduct : product
+      )
+    );
+    
+    // Send email notification (simulated)
+    console.log(`Sending email to ${user.email} about listing update`);
+    
+    return updatedProduct;
+  };
+  
+  // New function to delete a product
+  const deleteProduct = async (id: string) => {
+    if (!user) throw new Error("You must be logged in to delete a product");
+    
+    const existingProduct = getProduct(id);
+    if (!existingProduct) throw new Error("Product not found");
+    
+    // Check if the current user is the owner
+    if (existingProduct.seller.id !== user.id) {
+      throw new Error("You don't have permission to delete this product");
+    }
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    setProducts(prevProducts => 
+      prevProducts.filter(product => product.id !== id)
+    );
+  };
+  
+  // New function to mark a product as purchased
+  const confirmPurchase = async (productId: string, buyerId: string) => {
+    const product = getProduct(productId);
+    if (!product) throw new Error("Product not found");
+    
+    // Simulate API call for payment processing
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const now = new Date().toISOString();
+    
+    // Update the product as sold
+    setProducts(prevProducts =>
+      prevProducts.map(p => 
+        p.id === productId 
+          ? { 
+              ...p, 
+              sold: true, 
+              soldAt: now,
+              buyer: { id: buyerId }
+            } 
+          : p
+      )
+    );
+    
+    // Send email notifications (simulated)
+    console.log(`Sending purchase confirmation email to buyer ID ${buyerId}`);
+    console.log(`Sending seller notification email to ${product.seller.email}`);
+    
+    // Calculate platform fee (5%)
+    const platformFee = product.price * 0.05;
+    const sellerAmount = product.price - platformFee;
+    
+    console.log(`Processing payment: ${sellerAmount} to seller, ${platformFee} platform fee`);
   };
 
   const getMessages = useCallback(
@@ -154,6 +260,9 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         products,
         getProduct,
         createProduct,
+        updateProduct,
+        deleteProduct,
+        confirmPurchase,
         messages,
         messageThreads,
         getMessages,

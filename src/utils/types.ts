@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   name: string;
@@ -19,6 +20,11 @@ export interface Product {
   seller: User;
   createdAt: string;
   updatedAt: string;
+  sold?: boolean;
+  soldAt?: string;
+  buyer?: {
+    id: string;
+  };
 }
 
 export interface Message {
@@ -81,6 +87,7 @@ export const MOCK_PRODUCTS: Product[] = [
     seller: MOCK_USERS[0],
     createdAt: new Date(2023, 3, 10).toISOString(),
     updatedAt: new Date(2023, 3, 10).toISOString(),
+    sold: false,
   },
   {
     id: "2",
@@ -94,6 +101,7 @@ export const MOCK_PRODUCTS: Product[] = [
     seller: MOCK_USERS[1],
     createdAt: new Date(2023, 4, 5).toISOString(),
     updatedAt: new Date(2023, 4, 6).toISOString(),
+    sold: false,
   },
   {
     id: "3",
@@ -107,6 +115,7 @@ export const MOCK_PRODUCTS: Product[] = [
     seller: MOCK_USERS[2],
     createdAt: new Date(2023, 5, 15).toISOString(),
     updatedAt: new Date(2023, 5, 15).toISOString(),
+    sold: false,
   },
   {
     id: "4",
@@ -120,6 +129,7 @@ export const MOCK_PRODUCTS: Product[] = [
     seller: MOCK_USERS[0],
     createdAt: new Date(2023, 6, 1).toISOString(),
     updatedAt: new Date(2023, 6, 1).toISOString(),
+    sold: false,
   },
   {
     id: "5",
@@ -133,6 +143,7 @@ export const MOCK_PRODUCTS: Product[] = [
     seller: MOCK_USERS[1],
     createdAt: new Date(2023, 7, 12).toISOString(),
     updatedAt: new Date(2023, 7, 12).toISOString(),
+    sold: false,
   },
   {
     id: "6",
@@ -146,7 +157,24 @@ export const MOCK_PRODUCTS: Product[] = [
     seller: MOCK_USERS[2],
     createdAt: new Date(2023, 8, 8).toISOString(),
     updatedAt: new Date(2023, 8, 8).toISOString(),
+    sold: false,
   },
+  {
+    id: "7",
+    title: "Textbooks Bundle - Computer Science",
+    description: "Collection of computer science textbooks including algorithms, data structures, and programming languages. Perfect for CS students.",
+    price: 450,
+    images: ["https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&auto=format&fit=crop&w=1374&q=80"],
+    condition: "good",
+    category: "Books",
+    location: "Bar Ilan University",
+    seller: MOCK_USERS[0],
+    createdAt: new Date(2023, 9, 1).toISOString(),
+    updatedAt: new Date(2023, 9, 1).toISOString(),
+    sold: true,
+    soldAt: new Date(2023, 9, 10).toISOString(),
+    buyer: { id: "2" }
+  }
 ];
 
 export const MOCK_MESSAGES: Message[] = [

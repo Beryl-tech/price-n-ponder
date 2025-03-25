@@ -7,8 +7,8 @@ import { useProducts } from "../context/ProductContext";
 import { Button } from "@/components/ui/button";
 import { TabsContent, TabsList, TabsTrigger, Tabs } from "@/components/ui/tabs";
 import { ProductCard } from "../components/ProductCard";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, LayoutDashboard } from "lucide-react";
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -80,6 +80,13 @@ const Profile = () => {
                     Create Listing
                   </Button>
                   <Button 
+                    variant="outline"
+                    onClick={() => navigate("/user-dashboard")}
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    My Dashboard
+                  </Button>
+                  <Button 
                     variant="outline" 
                     onClick={handleLogout}
                     disabled={isLoading}
@@ -107,11 +114,23 @@ const Profile = () => {
             
             <TabsContent value="listings">
               {userProducts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {userProducts.map(product => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
+                <>
+                  <div className="mb-4 flex justify-between items-center">
+                    <h2 className="text-lg font-medium">Recent Listings</h2>
+                    <Button 
+                      variant="link" 
+                      onClick={() => navigate("/user-dashboard")}
+                      className="text-primary"
+                    >
+                      View All
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {userProducts.slice(0, 3).map(product => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="text-center bg-gray-50 py-16 rounded-lg">
                   <h3 className="text-xl font-medium mb-2">No listings yet</h3>
