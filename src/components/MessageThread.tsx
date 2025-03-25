@@ -4,9 +4,11 @@ import { useAuth } from "../context/AuthContext";
 import { useProducts } from "../context/ProductContext";
 import { Message as MessageType, MOCK_USERS } from "../utils/types";
 import { format } from "date-fns";
-import { Send } from "lucide-react";
+import { Send, AlertTriangle, Shield, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { containsExternalSaleAttempt, generateWarningMessage } from "../utils/messageModeration";
+import { useToast } from "@/hooks/use-toast";
 
 interface MessageThreadProps {
   threadId: string;
@@ -20,6 +22,7 @@ export const MessageThread = ({ threadId, productId, receiverId }: MessageThread
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const product = getProduct(productId);
@@ -42,6 +45,29 @@ export const MessageThread = ({ threadId, productId, receiverId }: MessageThread
     
     if (!newMessage.trim() || !user || isLoading) return;
     
+    // Check for external sale attempts
+    if (containsExternalSaleAttempt(newMessage)) {
+      toast({
+        title: "Message Blocked",
+        description: "Your message appears to be arranging an off-platform transaction, which isn't allowed for safety reasons.",
+        variant: "destructive",
+      });
+      
+      // Automatically send a warning message
+      try {
+        setIsLoading(true);
+        const warningMessage = generateWarningMessage();
+        await sendMessage(warningMessage, receiverId, productId);
+        setMessages(getMessages(threadId));
+        setNewMessage("");
+      } catch (error) {
+        console.error("Failed to send warning message:", error);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+    
     try {
       setIsLoading(true);
       await sendMessage(newMessage, receiverId, productId);
@@ -49,6 +75,11 @@ export const MessageThread = ({ threadId, productId, receiverId }: MessageThread
       setMessages(getMessages(threadId));
     } catch (error) {
       console.error("Failed to send message:", error);
+      toast({
+        title: "Message Failed",
+        description: "Your message couldn't be sent. Please try again later.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +94,17 @@ export const MessageThread = ({ threadId, productId, receiverId }: MessageThread
     }
     groupedMessages[date].push(message);
   });
+  
+  // Function to determine if a message is a system message
+  const isSystemMessage = (message: MessageType) => {
+    return message.content.includes("For your safety") || 
+           message.content.includes("To protect all users") ||
+           message.content.includes("Your message has been flagged") ||
+           message.content.includes("Bar-Mart requires all payments");
+  };
+  
+  // Determine if the product has been purchased
+  const isPurchased = false; // This would come from a real purchase history
   
   if (!user || !product || !receiver) return null;
   
@@ -87,6 +129,16 @@ export const MessageThread = ({ threadId, productId, receiverId }: MessageThread
         </div>
       </div>
       
+      {/* Safety Notice */}
+      <div className="bg-amber-50 p-3 border-b border-amber-100">
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-amber-600" />
+          <p className="text-xs text-amber-800">
+            For your safety, all transactions must be completed on Bar-Mart. Payment information and arrangements to meet outside the platform are not permitted.
+          </p>
+        </div>
+      </div>
+      
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {Object.keys(groupedMessages).map(date => (
@@ -99,27 +151,39 @@ export const MessageThread = ({ threadId, productId, receiverId }: MessageThread
             
             {groupedMessages[date].map(message => {
               const isFromCurrentUser = message.senderId === user.id;
+              const isSystem = isSystemMessage(message);
+              
               return (
                 <div 
                   key={message.id} 
                   className={cn(
                     "flex",
-                    isFromCurrentUser ? "justify-end" : "justify-start"
+                    isSystem ? "justify-center" : isFromCurrentUser ? "justify-end" : "justify-start"
                   )}
                 >
-                  <div 
-                    className={cn(
-                      "max-w-[70%] rounded-lg px-4 py-2",
-                      isFromCurrentUser 
-                        ? "bg-primary text-white" 
-                        : "bg-gray-100 text-foreground"
-                    )}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                    <p className="text-xs mt-1 opacity-70">
-                      {format(new Date(message.createdAt), "h:mm a")}
-                    </p>
-                  </div>
+                  {isSystem ? (
+                    <div className="bg-red-50 border border-red-100 text-red-800 px-4 py-2 rounded-lg max-w-[80%]">
+                      <div className="flex items-center gap-2 mb-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="font-medium text-xs">System Message</span>
+                      </div>
+                      <p className="text-sm">{message.content}</p>
+                    </div>
+                  ) : (
+                    <div 
+                      className={cn(
+                        "max-w-[70%] rounded-lg px-4 py-2",
+                        isFromCurrentUser 
+                          ? "bg-primary text-white" 
+                          : "bg-gray-100 text-foreground"
+                      )}
+                    >
+                      <p className="text-sm">{message.content}</p>
+                      <p className="text-xs mt-1 opacity-70">
+                        {format(new Date(message.createdAt), "h:mm a")}
+                      </p>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -131,6 +195,19 @@ export const MessageThread = ({ threadId, productId, receiverId }: MessageThread
             <p className="text-muted-foreground">No messages yet</p>
             <p className="text-sm text-muted-foreground mt-1">
               Start the conversation by sending a message
+            </p>
+          </div>
+        )}
+        
+        {/* Show purchase info if applicable */}
+        {isPurchased && (
+          <div className="bg-green-50 border border-green-100 text-green-800 p-4 rounded-lg mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Info className="w-4 h-4" />
+              <span className="font-medium">Payment Completed</span>
+            </div>
+            <p className="text-sm">
+              You can now arrange pickup details with the seller.
             </p>
           </div>
         )}

@@ -14,7 +14,7 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
   const { id, title, price, images, location, condition, createdAt } = product;
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   
   // Format timeAgo
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
@@ -49,7 +49,7 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     // In a real implementation, this would redirect to a payment gateway
-    alert(t("paymentProcessingMessage"));
+    alert("Payment is being processed. You'll be able to arrange pickup details after payment is complete.");
   };
 
   return (
@@ -77,12 +77,12 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
           </div>
           <div className="absolute bottom-3 left-3 campus-badge">
             <School className="w-3 h-3 mr-1" />
-            {t("campusOnly")}
+            Campus Only
           </div>
           {/* Sustainable badge */}
           <div className="absolute top-3 left-3 bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-medium flex items-center">
             <Leaf className="w-3 h-3 mr-1" />
-            {t("sustainable")}
+            Sustainable
           </div>
         </div>
         
@@ -116,11 +116,11 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
           {/* Savings indicator */}
           <div className="mt-2 bg-green-50 text-green-700 text-xs p-2 rounded-md flex items-center">
             <Leaf className="w-3 h-3 mr-1" />
-            {t("estimatedSavings")}: {formattedSavings}
+            Estimated Savings: {formattedSavings}
           </div>
           
           <div className="mt-2 fee-notice text-xs text-muted-foreground">
-            <p>{t("platformFee")}: {formattedPlatformFee}</p>
+            <p>Platform Fee: {formattedPlatformFee}</p>
           </div>
           
           {size === "lg" && (
@@ -128,7 +128,7 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
               className="w-full mt-4" 
               variant="outline"
             >
-              {t("viewDetails")}
+              View Details
             </Button>
           )}
           
@@ -138,7 +138,7 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
             variant="default"
           >
             <CreditCard className="w-4 h-4 mr-2" />
-            {t("payOnPlatform")}
+            Pay on Platform
           </Button>
         </div>
       </Link>

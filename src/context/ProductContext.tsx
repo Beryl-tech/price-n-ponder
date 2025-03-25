@@ -2,6 +2,8 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { Product, MOCK_PRODUCTS, Message, MOCK_MESSAGES, MessageThread, MOCK_MESSAGE_THREADS } from "../utils/types";
 import { useAuth } from "./AuthContext";
+import { formatDescription, containsExternalSaleAttempt as checkDescription } from "../utils/descriptionFormatter";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductContextType {
   products: Product[];
@@ -11,6 +13,7 @@ interface ProductContextType {
   messageThreads: MessageThread[];
   getMessages: (threadId: string) => Message[];
   sendMessage: (content: string, receiverId: string, productId: string) => Promise<Message>;
+  formatProductDescription: (description: string) => Promise<string>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -20,21 +23,50 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
   const [messageThreads, setMessageThreads] = useState<MessageThread[]>(MOCK_MESSAGE_THREADS);
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const getProduct = useCallback(
     (id: string) => products.find(product => product.id === id),
     [products]
   );
 
+  // New function for AI-powered description formatting
+  const formatProductDescription = async (description: string): Promise<string> => {
+    try {
+      // Check for external sale attempts
+      if (checkDescription(description)) {
+        toast({
+          title: "Description Warning",
+          description: "Your description contains contact information or seems to be arranging an off-platform sale, which isn't allowed.",
+          variant: "destructive",
+        });
+        return description; // Return original if it contains external sale attempts
+      }
+      
+      // Format the description using our utility
+      const formatted = await formatDescription(description);
+      return formatted;
+    } catch (error) {
+      console.error("Error formatting description:", error);
+      return description; // Return original if formatting fails
+    }
+  };
+
   const createProduct = async (productData: Omit<Product, "id" | "createdAt" | "updatedAt" | "seller">) => {
     if (!user) throw new Error("You must be logged in to create a product");
+
+    // Format the description with AI
+    let enhancedProductData = { ...productData };
+    if (productData.description) {
+      enhancedProductData.description = await formatProductDescription(productData.description);
+    }
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const now = new Date().toISOString();
     const newProduct: Product = {
-      ...productData,
+      ...enhancedProductData,
       id: String(products.length + 1),
       seller: user,
       createdAt: now,
@@ -126,6 +158,7 @@ export const ProductProvider = ({ children }: { children: ReactNode }) => {
         messageThreads,
         getMessages,
         sendMessage,
+        formatProductDescription,
       }}
     >
       {children}
