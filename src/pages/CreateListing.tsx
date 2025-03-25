@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "../context/ProductContext";
@@ -12,12 +13,15 @@ import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+// Define the valid condition types to match what's expected in your types
+type ProductCondition = "New" | "Like New" | "Used - Good" | "Used - Fair";
+
 const CreateListing = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
-  const [condition, setCondition] = useState("New");
+  const [condition, setCondition] = useState<ProductCondition>("New");
   const [location, setLocation] = useState("Bar Ilan University");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageURLs, setImageURLs] = useState<string[]>([]);
@@ -178,7 +182,7 @@ const CreateListing = () => {
           
           <div>
             <Label htmlFor="condition">Condition</Label>
-            <Select onValueChange={setCondition}>
+            <Select onValueChange={(value) => setCondition(value as ProductCondition)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select condition" />
               </SelectTrigger>
