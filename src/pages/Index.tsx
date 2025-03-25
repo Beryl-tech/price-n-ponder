@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
@@ -57,13 +58,13 @@ const Index = () => {
         <div className="container relative z-10 px-4 md:px-6 animate-fade-in">
           <div className="max-w-3xl">
             <div className="bg-primary/20 text-white backdrop-blur-sm inline-block px-3 py-1 rounded-full text-sm font-medium mb-4">
-              {t("forBarIlanStudents")}
+              For Bar-Ilan Students
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Bar-Mart: {t("barMartTagline")}
+              Bar-Mart: The Campus Marketplace
             </h1>
             <p className="text-xl text-white/90 mb-8">
-              {t("barMartDescription")}
+              Buy and sell items within the Bar-Ilan University community. Safe, sustainable, and student-focused.
             </p>
             
             {/* Search Bar */}
@@ -72,7 +73,7 @@ const Index = () => {
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder={t("searchPlaceholder")}
+                  placeholder="Search for items..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full py-3 pl-12 pr-4 bg-transparent text-white placeholder:text-white/70 focus:outline-none"
@@ -80,7 +81,7 @@ const Index = () => {
               </div>
               <Link to={`/products?search=${searchQuery}`}>
                 <Button size="lg" className="rounded-full px-6">
-                  {t("search")}
+                  Search
                 </Button>
               </Link>
             </div>
@@ -92,9 +93,9 @@ const Index = () => {
       <section className="py-16 bg-primary/5">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">{t("whyBarMart")}</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Use Bar-Mart?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              {t("barMartValueProp")}
+              Our platform is designed specifically for Bar-Ilan University students to buy and sell items safely and conveniently.
             </p>
           </div>
           
@@ -103,9 +104,9 @@ const Index = () => {
               <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <TrendingDown className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t("saveMoneyTitle")}</h3>
+              <h3 className="text-xl font-semibold mb-2">Save Money</h3>
               <p className="text-muted-foreground">
-                {t("saveMoneyDesc")}
+                Get great deals on textbooks, furniture, electronics and more from fellow students.
               </p>
             </div>
             
@@ -113,9 +114,9 @@ const Index = () => {
               <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Leaf className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t("sustainableTitle")}</h3>
+              <h3 className="text-xl font-semibold mb-2">Sustainable Living</h3>
               <p className="text-muted-foreground">
-                {t("sustainableDesc")}
+                Reduce waste by giving items a second life within our university community.
               </p>
             </div>
             
@@ -123,9 +124,9 @@ const Index = () => {
               <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t("communityTitle")}</h3>
+              <h3 className="text-xl font-semibold mb-2">Campus Community</h3>
               <p className="text-muted-foreground">
-                {t("communityDesc")}
+                Connect with other students while buying and selling within our trusted network.
               </p>
             </div>
           </div>
@@ -136,9 +137,9 @@ const Index = () => {
       <section className="py-20 bg-white">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">{t("browseCategories")}</h2>
+            <h2 className="text-3xl font-bold mb-4">Browse Categories</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              {t("exploreCategoriesDesc")}
+              Find exactly what you need across our diverse selection of campus essentials.
             </p>
           </div>
           
@@ -159,7 +160,7 @@ const Index = () => {
                 )}
               >
                 <span className="text-4xl mb-3">{category.icon}</span>
-                <span className="font-medium">{t(category.name.toLowerCase())}</span>
+                <span className="font-medium">{category.name.toLowerCase()}</span>
               </Link>
             ))}
           </div>
@@ -171,14 +172,14 @@ const Index = () => {
         <div className="container px-4 md:px-6">
           <div className="flex justify-between items-center mb-12">
             <div>
-              <h2 className="text-3xl font-bold mb-1">{t("featuredItems")}</h2>
+              <h2 className="text-3xl font-bold mb-1">Featured Items</h2>
               <p className="text-muted-foreground">
-                {t("discoverLatestListings")}
+                Discover the latest listings from Bar-Ilan students
               </p>
             </div>
             <Link to="/products">
               <Button variant="outline" className="group">
-                {t("viewAll")}
+                View All
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
@@ -192,9 +193,9 @@ const Index = () => {
       <section className="py-20 bg-white">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">{t("howItWorks")}</h2>
+            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              {t("simpleSteps")}
+              Getting started with Bar-Mart is simple and straightforward.
             </p>
           </div>
           
@@ -203,9 +204,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                 <span className="text-2xl font-bold">1</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t("createListing")}</h3>
+              <h3 className="text-xl font-semibold mb-3">Create a Listing</h3>
               <p className="text-muted-foreground">
-                {t("createListingDesc")}
+                Take a few photos, add a description, and set your price.
               </p>
             </div>
             
@@ -213,9 +214,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                 <span className="text-2xl font-bold">2</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t("connectBuyers")}</h3>
+              <h3 className="text-xl font-semibold mb-3">Connect with Buyers</h3>
               <p className="text-muted-foreground">
-                {t("connectBuyersDesc")}
+                Chat with interested students and answer their questions.
               </p>
             </div>
             
@@ -223,9 +224,9 @@ const Index = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                 <span className="text-2xl font-bold">3</span>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{t("completeSale")}</h3>
+              <h3 className="text-xl font-semibold mb-3">Complete the Sale</h3>
               <p className="text-muted-foreground">
-                {t("completeSaleDesc")}
+                Meet on campus, exchange the item, and get paid securely.
               </p>
             </div>
           </div>
@@ -233,7 +234,7 @@ const Index = () => {
           <div className="text-center mt-12">
             <Link to="/create-listing">
               <Button size="lg" className="px-8">
-                {t("startSelling")}
+                Start Selling
               </Button>
             </Link>
           </div>
@@ -247,7 +248,7 @@ const Index = () => {
             <div>
               <h2 className="text-xl font-bold mb-4">Bar-Mart</h2>
               <p className="text-gray-400">
-                {t("footerTagline")}
+                The trusted marketplace for Bar-Ilan University students.
               </p>
             </div>
             
@@ -316,7 +317,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} Bar-Mart. {t("allRightsReserved")}</p>
+            <p>&copy; {new Date().getFullYear()} Bar-Mart. All Rights Reserved</p>
           </div>
         </div>
       </footer>
