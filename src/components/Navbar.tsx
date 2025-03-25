@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "../context/LanguageContext";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import CartIndicator from "./CartIndicator";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -78,6 +79,7 @@ export const Navbar = () => {
               >
                 <MessageSquare className="w-5 h-5" />
               </Link>
+              <CartIndicator />
               <div className="relative group">
                 <button className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
                   {user?.avatar ? (
@@ -107,12 +109,15 @@ export const Navbar = () => {
               </div>
             </>
           ) : (
-            <Link 
-              to="/login" 
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-primary h-10 px-4 py-2 border border-primary hover:bg-primary/5"
-            >
-              {t("signIn")}
-            </Link>
+            <>
+              <CartIndicator />
+              <Link 
+                to="/login" 
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-primary h-10 px-4 py-2 border border-primary hover:bg-primary/5"
+              >
+                {t("signIn")}
+              </Link>
+            </>
           )}
           
           <LanguageSwitcher />
@@ -120,6 +125,7 @@ export const Navbar = () => {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center space-x-2">
+          <CartIndicator />
           <LanguageSwitcher />
           <button 
             className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:text-foreground"
@@ -164,6 +170,13 @@ export const Navbar = () => {
                 {t("messages")}
               </Link>
               <Link 
+                to="/cart" 
+                className="text-lg py-3 border-b border-gray-100 flex items-center"
+              >
+                <ShoppingCart className="w-5 h-5 mr-3" />
+                {t("cart")}
+              </Link>
+              <Link 
                 to="/profile" 
                 className="text-lg py-3 border-b border-gray-100 flex items-center"
               >
@@ -178,12 +191,21 @@ export const Navbar = () => {
               </button>
             </>
           ) : (
-            <Link 
-              to="/login" 
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
-            >
-              {t("signIn")}
-            </Link>
+            <>
+              <Link 
+                to="/cart" 
+                className="text-lg py-3 border-b border-gray-100 flex items-center"
+              >
+                <ShoppingCart className="w-5 h-5 mr-3" />
+                {t("cart")}
+              </Link>
+              <Link 
+                to="/login" 
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+              >
+                {t("signIn")}
+              </Link>
+            </>
           )}
         </nav>
       </div>

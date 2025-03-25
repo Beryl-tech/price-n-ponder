@@ -22,11 +22,18 @@ interface CartItem {
   };
 }
 
+// Payment processing status
+type PaymentStatus = 'idle' | 'processing' | 'success' | 'error';
+
 const Cart = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckoutDialogOpen, setIsCheckoutDialogOpen] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+  const [cardName, setCardName] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -47,6 +54,9 @@ const Cart = () => {
   useEffect(() => {
     if (!isLoading) {
       localStorage.setItem('cart', JSON.stringify(cartItems));
+      
+      // Trigger update for cart indicator
+      window.dispatchEvent(new Event('cartUpdated'));
     }
   }, [cartItems, isLoading]);
 
@@ -99,37 +109,117 @@ const Cart = () => {
     });
   };
 
+  // Validate card fields
+  const validateCardFields = () => {
+    if (!cardNumber.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter card number",
+      });
+      return false;
+    }
+    
+    if (!cardExpiry.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter expiry date",
+      });
+      return false;
+    }
+    
+    if (!cardCvc.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter CVC code",
+      });
+      return false;
+    }
+    
+    if (!cardName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter cardholder name",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   // Process checkout
   const handleCheckout = async () => {
+    if (!validateCardFields()) return;
+    
     try {
-      setIsProcessingPayment(true);
+      setPaymentStatus('processing');
       
-      // Simulate payment processing delay
+      // Simulate payment processing
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
-      setIsCheckoutDialogOpen(false);
-      setIsProcessingPayment(false);
+      // Process "real" payment here (simulated)
+      if (cardNumber.endsWith('1234')) {
+        throw new Error("Payment declined");
+      }
+      
+      setPaymentStatus('success');
       
       // Clear cart after successful checkout
       clearCart();
       
       // Show success message
       toast({
-        title: "Order Placed!",
-        description: "This is a demo order. In a real app, you would receive confirmation details.",
+        title: "Payment Successful!",
+        description: "Your order has been placed successfully.",
       });
       
-      // Navigate to a thank you page or home
-      navigate("/");
+      // Redirect to confirmation page after delay
+      setTimeout(() => {
+        setIsCheckoutDialogOpen(false);
+        navigate("/");
+      }, 1500);
+      
     } catch (error) {
-      setIsProcessingPayment(false);
+      setPaymentStatus('error');
       
       toast({
         variant: "destructive",
-        title: "Checkout failed",
-        description: "This is a demo. No actual payment was processed.",
+        title: "Payment failed",
+        description: error instanceof Error ? error.message : "Please try again with a different card.",
       });
     }
+  };
+
+  // Format card number with spaces
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = matches && matches[0] || '';
+    const parts = [];
+    
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return value;
+    }
+  };
+
+  // Format card expiry date
+  const formatExpiryDate = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    
+    if (v.length >= 2) {
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
+    }
+    
+    return v;
   };
 
   return (
@@ -246,14 +336,6 @@ const Cart = () => {
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
                 <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                 
-                <Alert className="mb-4 bg-yellow-50 border-yellow-200 text-yellow-800">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Demo Checkout</AlertTitle>
-                  <AlertDescription>
-                    This is a demo checkout and no actual payment will be processed.
-                  </AlertDescription>
-                </Alert>
-                
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
@@ -273,6 +355,7 @@ const Cart = () => {
                 <Button 
                   className="w-full mb-4" 
                   onClick={() => setIsCheckoutDialogOpen(true)}
+                  disabled={cartItems.length === 0}
                 >
                   Proceed to Checkout
                 </Button>
@@ -293,7 +376,7 @@ const Cart = () => {
           <DialogHeader>
             <DialogTitle>Complete Your Purchase</DialogTitle>
             <DialogDescription>
-              This is a demo payment form. No actual payment will be processed.
+              Enter your payment details to complete your purchase.
             </DialogDescription>
           </DialogHeader>
           
@@ -315,12 +398,30 @@ const Cart = () => {
             
             <div className="space-y-4 border-b pb-4">
               <div>
+                <label className="block text-sm font-medium mb-2">Cardholder Name</label>
+                <input
+                  type="text"
+                  placeholder="John Doe"
+                  value={cardName}
+                  onChange={(e) => setCardName(e.target.value)}
+                  className="w-full border border-gray-200 rounded-md px-3 py-2"
+                  disabled={paymentStatus === 'processing'}
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium mb-2">Card Number</label>
                 <input
                   type="text"
                   placeholder="1234 5678 9012 3456"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                  maxLength={19}
                   className="w-full border border-gray-200 rounded-md px-3 py-2"
+                  disabled={paymentStatus === 'processing'}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use any card number except ones ending with 1234 (which will trigger an error)
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -328,7 +429,11 @@ const Cart = () => {
                   <input
                     type="text"
                     placeholder="MM/YY"
+                    value={cardExpiry}
+                    onChange={(e) => setCardExpiry(formatExpiryDate(e.target.value))}
+                    maxLength={5}
                     className="w-full border border-gray-200 rounded-md px-3 py-2"
+                    disabled={paymentStatus === 'processing'}
                   />
                 </div>
                 <div>
@@ -336,25 +441,54 @@ const Cart = () => {
                   <input
                     type="text"
                     placeholder="123"
+                    value={cardCvc}
+                    onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').substring(0, 3))}
+                    maxLength={3}
                     className="w-full border border-gray-200 rounded-md px-3 py-2"
+                    disabled={paymentStatus === 'processing'}
                   />
                 </div>
               </div>
             </div>
+            
+            {paymentStatus === 'success' && (
+              <Alert className="bg-green-50 border-green-200 text-green-800">
+                <ShieldCheck className="h-4 w-4" />
+                <AlertTitle>Payment Successful</AlertTitle>
+                <AlertDescription>
+                  Your order has been placed successfully!
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {paymentStatus === 'error' && (
+              <Alert className="bg-red-50 border-red-200 text-red-800">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Payment Failed</AlertTitle>
+                <AlertDescription>
+                  Your payment could not be processed. Please try again.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
           
           <DialogFooter>
             <Button 
               variant="outline" 
-              onClick={() => setIsCheckoutDialogOpen(false)}
+              onClick={() => {
+                setIsCheckoutDialogOpen(false);
+                setPaymentStatus('idle');
+              }}
+              disabled={paymentStatus === 'processing' || paymentStatus === 'success'}
             >
               Cancel
             </Button>
             <Button 
               onClick={handleCheckout}
-              disabled={isProcessingPayment}
+              disabled={paymentStatus === 'processing' || paymentStatus === 'success' || cartItems.length === 0}
             >
-              {isProcessingPayment ? "Processing..." : "Pay Now"}
+              {paymentStatus === 'processing' ? "Processing..." : 
+               paymentStatus === 'success' ? "Payment Complete" : "Pay Now"}
             </Button>
           </DialogFooter>
         </DialogContent>
