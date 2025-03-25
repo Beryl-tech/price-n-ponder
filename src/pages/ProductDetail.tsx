@@ -1,15 +1,16 @@
+
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { useProducts } from "../context/ProductContext";
 import { useAuth } from "../context/AuthContext";
-import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MessageSquare, Share, ShieldCheck, AlertTriangle } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MessageSquare, Share, ShieldCheck, AlertTriangle, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ProductGrid } from "../components/ProductGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,6 +25,9 @@ const ProductDetail = () => {
   const [message, setMessage] = useState("");
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   
   const product = getProduct(id || "");
   
@@ -102,6 +106,85 @@ const ProductDetail = () => {
       });
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleAddToCart = () => {
+    // Get existing cart from local storage or initialize empty cart
+    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    // Check if item is already in cart
+    const itemIndex = existingCart.findIndex((item: any) => item.id === product.id);
+    
+    if (itemIndex > -1) {
+      // Update quantity if item exists
+      existingCart[itemIndex].quantity += quantity;
+    } else {
+      // Add new item
+      existingCart.push({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.images[0],
+        quantity: quantity,
+        seller: {
+          id: product.seller.id,
+          name: product.seller.name
+        }
+      });
+    }
+    
+    // Save updated cart
+    localStorage.setItem('cart', JSON.stringify(existingCart));
+    
+    toast({
+      title: "Added to cart",
+      description: `${quantity} × ${product.title} added to your cart.`
+    });
+  };
+
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to complete your purchase."
+      });
+      navigate("/login");
+      return;
+    }
+    
+    setIsPaymentDialogOpen(true);
+  };
+  
+  const handleProcessPayment = async () => {
+    try {
+      setIsProcessingPayment(true);
+      
+      // Simulate payment processing delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      setIsPaymentDialogOpen(false);
+      
+      toast({
+        title: "Demo Notification",
+        description: "This is a demo payment. In a real app, you would be redirected to a payment gateway."
+      });
+      
+      // Navigate to a thank you or order confirmation page
+      // For demo purposes, just show a toast
+      toast({
+        title: "Purchase Simulated",
+        description: "In a real application, your payment would be processed and the seller notified."
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Payment failed",
+        description: "This is a demo. No actual payment was processed."
+      });
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
   
@@ -226,10 +309,52 @@ const ProductDetail = () => {
                 </div>
               </div>
               
+              {/* Quantity selector */}
+              <div className="mb-6">
+                <label htmlFor="quantity" className="block text-sm font-medium mb-2">
+                  Quantity
+                </label>
+                <div className="flex items-center border border-gray-200 rounded-md w-32">
+                  <button 
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    className="flex-none w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                  >
+                    -
+                  </button>
+                  <input
+                    id="quantity"
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full h-8 text-center focus:outline-none"
+                  />
+                  <button 
+                    onClick={() => setQuantity(q => q + 1)}
+                    className="flex-none w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mb-4">
+                {/* Buy Now button */}
+                <Button className="flex-1" onClick={handleBuyNow}>
+                  Buy Now
+                </Button>
+                
+                {/* Add to Cart button */}
+                <Button variant="secondary" className="flex-1" onClick={handleAddToCart}>
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Add to Cart
+                </Button>
+              </div>
+              
               <div className="flex gap-3 mb-6">
                 <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="flex-1">
+                    <Button variant="outline" className="flex-1">
                       <MessageSquare className="w-4 h-4 mr-2" />
                       Message Seller
                     </Button>
@@ -328,6 +453,109 @@ const ProductDetail = () => {
           </div>
         )}
       </main>
+
+      {/* Payment Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Complete Your Purchase</DialogTitle>
+            <DialogDescription>
+              This is a demo payment form. No actual payment will be processed.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between border-b pb-4">
+              <div className="flex items-center space-x-3">
+                <img 
+                  src={images[0]} 
+                  alt={title}
+                  className="w-16 h-16 object-cover rounded-md" 
+                />
+                <div>
+                  <h3 className="font-medium">{title}</h3>
+                  <p className="text-sm text-muted-foreground">Quantity: {quantity}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-medium">{formattedPrice}</p>
+                <p className="text-sm text-muted-foreground">Per item</p>
+              </div>
+            </div>
+            
+            <div className="border-b pb-4">
+              <div className="flex justify-between py-1">
+                <span>Subtotal</span>
+                <span>{new Intl.NumberFormat('he-IL', {
+                  style: 'currency',
+                  currency: 'ILS',
+                  minimumFractionDigits: 0,
+                }).format(price * quantity)}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>Platform fee</span>
+                <span>{new Intl.NumberFormat('he-IL', {
+                  style: 'currency',
+                  currency: 'ILS',
+                  minimumFractionDigits: 0,
+                }).format(price * quantity * 0.05)}</span>
+              </div>
+              <div className="flex justify-between py-1 font-medium">
+                <span>Total</span>
+                <span>{new Intl.NumberFormat('he-IL', {
+                  style: 'currency',
+                  currency: 'ILS',
+                  minimumFractionDigits: 0,
+                }).format(price * quantity * 1.05)}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-4 border-b pb-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Card Number</label>
+                <input
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  className="w-full border border-gray-200 rounded-md px-3 py-2"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Expiry Date</label>
+                  <input
+                    type="text"
+                    placeholder="MM/YY"
+                    className="w-full border border-gray-200 rounded-md px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">CVC</label>
+                  <input
+                    type="text"
+                    placeholder="123"
+                    className="w-full border border-gray-200 rounded-md px-3 py-2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsPaymentDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleProcessPayment}
+              disabled={isProcessingPayment}
+            >
+              {isProcessingPayment ? "Processing..." : "Pay Now"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
