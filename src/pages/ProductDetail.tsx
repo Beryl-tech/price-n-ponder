@@ -1,17 +1,17 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { useProducts } from "../context/ProductContext";
 import { useAuth } from "../context/AuthContext";
-import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MessageSquare, Share, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Heart, MessageSquare, Share, ShieldCheck, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ProductGrid } from "../components/ProductGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -46,18 +46,15 @@ const ProductDetail = () => {
   
   const { title, description, price, images, condition, category, location, seller, createdAt } = product;
   
-  // Format price as currency
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  const formattedPrice = new Intl.NumberFormat('he-IL', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'ILS',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(price);
   
-  // Format time ago
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
-  // Related products (same category, excluding current)
   const relatedProducts = products
     .filter(p => p.category === category && p.id !== id)
     .slice(0, 4);
@@ -113,7 +110,6 @@ const ProductDetail = () => {
       <Navbar />
       
       <main className="container px-4 md:px-6 py-24">
-        {/* Back button */}
         <button 
           onClick={() => navigate(-1)}
           className="flex items-center text-muted-foreground hover:text-foreground mb-6 transition-colors"
@@ -123,10 +119,8 @@ const ProductDetail = () => {
         </button>
         
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-          {/* Product Images */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl overflow-hidden border border-gray-100">
-              {/* Main Image */}
               <div className="relative h-[400px] md:h-[500px] bg-gray-50">
                 <img 
                   src={images[activeImageIndex]} 
@@ -134,7 +128,6 @@ const ProductDetail = () => {
                   className="w-full h-full object-contain"
                 />
                 
-                {/* Image Navigation */}
                 {images.length > 1 && (
                   <>
                     <button 
@@ -153,7 +146,6 @@ const ProductDetail = () => {
                 )}
               </div>
               
-              {/* Thumbnail Images */}
               {images.length > 1 && (
                 <div className="flex p-4 gap-2 overflow-x-auto scrollbar-none">
                   {images.map((image, index) => (
@@ -177,11 +169,18 @@ const ProductDetail = () => {
             </div>
           </div>
           
-          {/* Product Details */}
           <div className="lg:col-span-2 flex flex-col">
             <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6 flex-grow">
               <h1 className="text-2xl md:text-3xl font-bold mb-2">{title}</h1>
               <p className="text-3xl font-semibold text-primary mb-4">{formattedPrice}</p>
+              
+              <Alert className="mb-4 bg-yellow-50 border-yellow-200 text-yellow-800">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Demo Product</AlertTitle>
+                <AlertDescription>
+                  This is a demo listing and not available for purchase.
+                </AlertDescription>
+              </Alert>
               
               <div className="flex items-center gap-2 mb-6">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
@@ -192,7 +191,6 @@ const ProductDetail = () => {
                 </span>
               </div>
               
-              {/* Seller Info */}
               <div className="flex items-center mb-6">
                 {seller.avatar ? (
                   <img 
@@ -213,13 +211,11 @@ const ProductDetail = () => {
                 </div>
               </div>
               
-              {/* Location */}
               <div className="mb-6">
                 <h3 className="text-sm font-medium mb-1">Location</h3>
                 <p className="text-muted-foreground">{location}</p>
               </div>
               
-              {/* Safety Tips */}
               <div className="mb-6 p-3 bg-green-50 border border-green-100 rounded-lg flex items-start">
                 <ShieldCheck className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
                 <div>
@@ -230,7 +226,6 @@ const ProductDetail = () => {
                 </div>
               </div>
               
-              {/* Action Buttons */}
               <div className="flex gap-3 mb-6">
                 <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
                   <DialogTrigger asChild>
@@ -288,7 +283,6 @@ const ProductDetail = () => {
           </div>
         </div>
         
-        {/* Product Information Tabs */}
         <div className="mt-12">
           <Tabs defaultValue="description">
             <TabsList className="w-full grid grid-cols-2 md:flex md:w-auto">
@@ -327,7 +321,6 @@ const ProductDetail = () => {
           </Tabs>
         </div>
         
-        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
             <h2 className="text-2xl font-bold mb-6">Similar Items</h2>

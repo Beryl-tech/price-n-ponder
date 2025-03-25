@@ -4,7 +4,7 @@ import { Product } from "../utils/types";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MapPin, School, CreditCard, Leaf } from "lucide-react";
+import { MapPin, School, CreditCard, Leaf, AlertTriangle } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -21,8 +21,8 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
   const platformFee = Math.ceil(price * 0.05);
   const totalPrice = price + platformFee;
   
-  // Format price as currency
-  const formattedPrice = new Intl.NumberFormat('en-US', {
+  // Format price as currency (now in shekels)
+  const formattedPrice = new Intl.NumberFormat('he-IL', {
     style: 'currency',
     currency: 'ILS',
     minimumFractionDigits: 0,
@@ -31,19 +31,12 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
 
   // Calculate savings compared to buying new (approximation)
   const estimatedSavings = Math.ceil(price * 0.4); // Assume 40% cheaper than buying new
-  const formattedSavings = new Intl.NumberFormat('en-US', {
+  const formattedSavings = new Intl.NumberFormat('he-IL', {
     style: 'currency',
     currency: 'ILS',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(estimatedSavings);
-
-  const handlePayment = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // In a real implementation, this would redirect to a payment gateway
-    alert("Payment is being processed. You'll be able to arrange pickup details after payment is complete.");
-  };
 
   return (
     <div 
@@ -121,14 +114,11 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
             </Button>
           )}
           
-          <Button
-            onClick={handlePayment}
-            className="w-full mt-3"
-            variant="default"
-          >
-            <CreditCard className="w-4 h-4 mr-2" />
-            Pay on Platform
-          </Button>
+          {/* Demo notice instead of payment button */}
+          <div className="w-full mt-3 bg-yellow-50 border border-yellow-200 rounded-md p-2 text-yellow-700 text-xs flex items-center">
+            <AlertTriangle className="w-3 h-3 mr-1 flex-shrink-0" />
+            Demo listing - not available for purchase
+          </div>
         </div>
       </Link>
     </div>
