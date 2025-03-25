@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -36,7 +35,24 @@ const CheckoutForm = ({ product, onCheckoutComplete }: CheckoutFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Format card number with spaces
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You must be logged in to complete a purchase.",
+        variant: "destructive",
+      });
+      navigate("/login");
+    } else if (!user.emailVerified) {
+      toast({
+        title: "Email verification required",
+        description: "Please verify your email before making a purchase.",
+        variant: "destructive",
+      });
+      navigate("/verify-email");
+    }
+  }, [user, navigate, toast]);
+  
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     const matches = v.match(/\d{4,16}/g);
@@ -54,7 +70,6 @@ const CheckoutForm = ({ product, onCheckoutComplete }: CheckoutFormProps) => {
     }
   };
   
-  // Format card expiry date
   const formatExpiryDate = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
     
@@ -78,7 +93,6 @@ const CheckoutForm = ({ product, onCheckoutComplete }: CheckoutFormProps) => {
       return;
     }
     
-    // Validate form
     if (paymentMethod === "card") {
       if (!cardNumber || !cardName || !cardExpiry || !cardCVC) {
         toast({
@@ -101,14 +115,10 @@ const CheckoutForm = ({ product, onCheckoutComplete }: CheckoutFormProps) => {
     
     setIsProcessing(true);
     
-    // Simulate payment processing
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Handle successful payment
       onCheckoutComplete(product.id);
-      
-      // Navigate to confirmation page
       navigate(`/payment/confirmation/${product.id}`);
     } catch (error) {
       console.error("Payment error:", error);

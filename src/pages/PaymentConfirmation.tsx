@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
@@ -7,12 +7,15 @@ import { useProducts } from "../context/ProductContext";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Clock, MapPin, Mail } from "lucide-react";
 import { Product } from "../utils/types";
+import { useToast } from "@/hooks/use-toast";
 
 const PaymentConfirmation = () => {
   const { productId } = useParams<{ productId: string }>();
   const { user } = useAuth();
   const { getProduct, confirmPurchase } = useProducts();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [emailSent, setEmailSent] = useState(false);
   
   const product = productId ? getProduct(productId) as Product : null;
   
@@ -30,12 +33,33 @@ const PaymentConfirmation = () => {
     }
   }, [product, productId, navigate]);
   
-  // Mark product as purchased
+  // Mark product as purchased and handle email notifications
   useEffect(() => {
-    if (product && productId && user) {
-      confirmPurchase(productId, user.id);
+    if (product && productId && user && !emailSent) {
+      // Confirm purchase in the database
+      confirmPurchase(productId, user.id)
+        .then(() => {
+          // Simulate sending confirmation emails
+          console.log(`Sending confirmation email to buyer: ${user.email}`);
+          console.log(`Sending notification email to seller: ${product.seller.email}`);
+          
+          toast({
+            title: "Purchase confirmed!",
+            description: "Confirmation emails have been sent to you and the seller.",
+          });
+          
+          setEmailSent(true);
+        })
+        .catch(error => {
+          console.error("Error confirming purchase:", error);
+          toast({
+            variant: "destructive",
+            title: "Error confirming purchase",
+            description: "There was a problem confirming your purchase. Please contact support.",
+          });
+        });
     }
-  }, [product, productId, user, confirmPurchase]);
+  }, [product, productId, user, emailSent, confirmPurchase, toast]);
   
   if (!product || !user) {
     return null;

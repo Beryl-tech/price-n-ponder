@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { getProduct, products, sendMessage } = useProducts();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isVerified } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -57,7 +57,6 @@ const ProductDetail = () => {
   
   const { title, description, price, images, condition, category, location, seller, createdAt } = product;
   
-  // Format price with platform fee already included
   const formattedPrice = new Intl.NumberFormat('he-IL', {
     style: 'currency',
     currency: 'ILS',
@@ -118,17 +117,23 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    // Get existing cart from local storage or initialize empty cart
+    if (!isAuthenticated) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to add items to your cart."
+      });
+      navigate("/login");
+      return;
+    }
+    
     const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
     
-    // Check if item is already in cart
     const itemIndex = existingCart.findIndex((item: any) => item.id === product.id);
     
     if (itemIndex > -1) {
-      // Update quantity if item exists
       existingCart[itemIndex].quantity += quantity;
     } else {
-      // Add new item
       existingCart.push({
         id: product.id,
         title: product.title,
@@ -142,10 +147,8 @@ const ProductDetail = () => {
       });
     }
     
-    // Save updated cart
     localStorage.setItem('cart', JSON.stringify(existingCart));
     
-    // Dispatch custom event to update cart indicator
     window.dispatchEvent(new Event('cartUpdated'));
     
     toast({
@@ -161,7 +164,18 @@ const ProductDetail = () => {
         title: "Authentication required",
         description: "Please sign in to complete your purchase."
       });
+      localStorage.setItem("pendingPurchase", id || "");
       navigate("/login");
+      return;
+    }
+    
+    if (!isVerified) {
+      toast({
+        variant: "destructive",
+        title: "Email verification required",
+        description: "Please verify your email address before making a purchase."
+      });
+      navigate("/verify-email");
       return;
     }
     
@@ -172,7 +186,6 @@ const ProductDetail = () => {
     try {
       setIsProcessingPayment(true);
       
-      // Simulate payment processing delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
       setIsPaymentDialogOpen(false);
@@ -182,8 +195,6 @@ const ProductDetail = () => {
         description: "This is a demo payment. In a real app, you would be redirected to a payment gateway."
       });
       
-      // Navigate to a thank you or order confirmation page
-      // For demo purposes, just show a toast
       toast({
         title: "Purchase Simulated",
         description: "In a real application, your payment would be processed and the seller notified."
@@ -320,7 +331,6 @@ const ProductDetail = () => {
                 </div>
               </div>
               
-              {/* Quantity selector */}
               <div className="mb-6">
                 <label htmlFor="quantity" className="block text-sm font-medium mb-2">
                   Quantity
@@ -350,12 +360,10 @@ const ProductDetail = () => {
               </div>
               
               <div className="flex gap-3 mb-4">
-                {/* Buy Now button */}
                 <Button className="flex-1" onClick={handleBuyNow}>
                   Buy Now
                 </Button>
                 
-                {/* Add to Cart button */}
                 <Button variant="secondary" className="flex-1" onClick={handleAddToCart}>
                   <ShoppingCart className="w-4 h-4 mr-2" />
                   Add to Cart
@@ -465,94 +473,5 @@ const ProductDetail = () => {
         )}
       </main>
 
-      {/* Dialog for payment */}
-      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Complete Your Purchase</DialogTitle>
-            <DialogDescription>
-              This is a demo payment form. No actual payment will be processed.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div className="flex items-center space-x-3">
-                <img 
-                  src={images[0]} 
-                  alt={title}
-                  className="w-16 h-16 object-cover rounded-md" 
-                />
-                <div>
-                  <h3 className="font-medium">{title}</h3>
-                  <p className="text-sm text-muted-foreground">Quantity: {quantity}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">{formattedPrice}</p>
-                <p className="text-sm text-muted-foreground">Per item</p>
-              </div>
-            </div>
-            
-            <div className="border-b pb-4">
-              <div className="flex justify-between py-1 font-medium">
-                <span>Total</span>
-                <span>{new Intl.NumberFormat('he-IL', {
-                  style: 'currency',
-                  currency: 'ILS',
-                  minimumFractionDigits: 0,
-                }).format(price * quantity)}</span>
-              </div>
-            </div>
-            
-            <div className="space-y-4 border-b pb-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Card Number</label>
-                <input
-                  type="text"
-                  placeholder="1234 5678 9012 3456"
-                  className="w-full border border-gray-200 rounded-md px-3 py-2"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Expiry Date</label>
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    className="w-full border border-gray-200 rounded-md px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">CVC</label>
-                  <input
-                    type="text"
-                    placeholder="123"
-                    className="w-full border border-gray-200 rounded-md px-3 py-2"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsPaymentDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleProcessPayment}
-              disabled={isProcessingPayment}
-            >
-              {isProcessingPayment ? "Processing..." : "Pay Now"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
+      <
 
-export default ProductDetail;
