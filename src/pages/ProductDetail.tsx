@@ -472,6 +472,82 @@ const ProductDetail = () => {
           </div>
         )}
       </main>
+      
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Complete Your Purchase</DialogTitle>
+            <DialogDescription>
+              This is a demo checkout. No actual payment will be processed.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b">
+              <img 
+                src={images[0]} 
+                alt={title}
+                className="w-16 h-16 object-cover rounded-md"
+              />
+              <div className="flex-1">
+                <h3 className="font-medium">{title}</h3>
+                <p className="text-sm text-muted-foreground">Quantity: {quantity}</p>
+                <p className="font-semibold">{formattedPrice}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal</span>
+                <span>{formattedPrice}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Platform fee (5%)</span>
+                <span>
+                  {new Intl.NumberFormat('he-IL', { 
+                    style: 'currency', 
+                    currency: 'ILS',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }).format(price * 0.05)}
+                </span>
+              </div>
+              <div className="flex justify-between font-medium pt-2 border-t">
+                <span>Total</span>
+                <span>
+                  {new Intl.NumberFormat('he-IL', { 
+                    style: 'currency', 
+                    currency: 'ILS',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }).format(price * 1.05)}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsPaymentDialogOpen(false)}
+              disabled={isProcessingPayment}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                handleProcessPayment();
+                navigate(`/payment-confirmation/${product.id}`);
+              }}
+              disabled={isProcessingPayment}
+            >
+              {isProcessingPayment ? "Processing..." : "Confirm Purchase"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
 
-      <
-
+export default ProductDetail;
