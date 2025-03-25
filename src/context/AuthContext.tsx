@@ -1,6 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { MOCK_USERS, User } from "../utils/types";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   user: User | null;
@@ -16,12 +17,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check if user is already logged in (from localStorage in this demo)
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Failed to parse stored user:", error);
+        localStorage.removeItem("currentUser");
+      }
     }
     setIsLoading(false);
   }, []);
@@ -36,11 +43,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const foundUser = MOCK_USERS.find(u => u.email === email);
       
       if (!foundUser) {
+        toast({
+          title: "Login failed",
+          description: "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
         throw new Error("Invalid credentials");
       }
       
       setUser(foundUser);
       localStorage.setItem("currentUser", JSON.stringify(foundUser));
+      
+      toast({
+        title: "Welcome back!",
+        description: `You've successfully logged in as ${foundUser.name}`,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -56,6 +73,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userExists = MOCK_USERS.some(u => u.email === email);
       
       if (userExists) {
+        toast({
+          title: "Registration failed",
+          description: "A user with this email already exists.",
+          variant: "destructive",
+        });
         throw new Error("User already exists");
       }
       
@@ -70,6 +92,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       MOCK_USERS.push(newUser);
       setUser(newUser);
       localStorage.setItem("currentUser", JSON.stringify(newUser));
+      
+      toast({
+        title: "Registration successful!",
+        description: "Your account has been created.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -78,6 +105,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("currentUser");
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
   };
 
   return (

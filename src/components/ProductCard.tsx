@@ -17,11 +17,11 @@ export const ProductCard = ({ product, size = "md" }: ProductCardProps) => {
   // Format timeAgo
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
   
-  // Calculate total price including platform fee (now hidden from buyers)
+  // Calculate total price including platform fee (hidden from buyers)
   const platformFee = Math.ceil(price * 0.05);
   const totalPrice = price + platformFee;
   
-  // Format price as currency (now in shekels)
+  // Format price as currency (in shekels)
   const formattedPrice = new Intl.NumberFormat('he-IL', {
     style: 'currency',
     currency: 'ILS',
