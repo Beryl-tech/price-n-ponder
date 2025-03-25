@@ -14,6 +14,8 @@ import ProductDetail from "./pages/ProductDetail";
 import CreateListing from "./pages/CreateListing";
 import Messages from "./pages/Messages";
 import Login from "./pages/Login";
+import VerifyEmail from "./pages/VerifyEmail";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Cart from "./pages/Cart";
 import NotFound from "./pages/NotFound";
@@ -44,6 +46,8 @@ const App = () => (
                 <Route path="/create-listing" element={<CreateListing />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="*" element={<NotFound />} />

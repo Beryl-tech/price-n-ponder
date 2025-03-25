@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Menu, X, Search, MessageSquare, User, ShoppingBag, PlusCircle, ShoppingCart } from "lucide-react";
@@ -173,7 +174,7 @@ export const Navbar = () => {
                 className="text-lg py-3 border-b border-gray-100 flex items-center"
               >
                 <ShoppingCart className="w-5 h-5 mr-3" />
-                {t("cart")}
+                Cart
               </Link>
               <Link 
                 to="/profile" 
@@ -196,7 +197,7 @@ export const Navbar = () => {
                 className="text-lg py-3 border-b border-gray-100 flex items-center"
               >
                 <ShoppingCart className="w-5 h-5 mr-3" />
-                {t("cart")}
+                Cart
               </Link>
               <Link 
                 to="/login" 

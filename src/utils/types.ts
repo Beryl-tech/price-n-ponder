@@ -1,9 +1,9 @@
-
 export interface User {
   id: string;
   name: string;
   email: string;
   avatar?: string;
+  emailVerified?: boolean;
   createdAt: string;
 }
 
@@ -47,6 +47,7 @@ export const MOCK_USERS: User[] = [
     name: "Alex Johnson",
     email: "alex@example.com",
     avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+    emailVerified: true,
     createdAt: new Date(2023, 0, 15).toISOString(),
   },
   {
@@ -54,6 +55,7 @@ export const MOCK_USERS: User[] = [
     name: "Sarah Miller",
     email: "sarah@example.com",
     avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+    emailVerified: true,
     createdAt: new Date(2023, 1, 20).toISOString(),
   },
   {
@@ -61,6 +63,7 @@ export const MOCK_USERS: User[] = [
     name: "Mike Davis",
     email: "mike@example.com",
     avatar: "https://randomuser.me/api/portraits/men/3.jpg",
+    emailVerified: true,
     createdAt: new Date(2023, 2, 5).toISOString(),
   },
 ];
